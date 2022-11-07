@@ -12,14 +12,16 @@ import numpy as np
 from scipy.optimize import curve_fit as curveFit
 import datetime
 import os
+import sys
 
 timestamp = datetime.datetime.now()
 
-note = "test note"
+if len(sys.argv) > 0:
+    note = sys.argv[1]
 
 # import data
 path = "/Users/joel/Research/LCOF Cooling/Data/221006 - THE P-O & P-P DATA/p-p/"
-base = "/Users/joel/Research/Nanophotonics/Code/Go/Plotting Data in Go/python/"
+base = "/Users/joel/Research/LCOF Cooling/Python/LCOF-Cooling/Plots/"
 save = base + timestamp.strftime("%Y-%b-%d") + "/P-P/" + timestamp.strftime("%X") + ": " + note + "/"
 if not os.path.exists(save):
   os.makedirs(save)
@@ -34,28 +36,28 @@ for pow in powers:
     for n in range(files):
       df[pow+f+str(n)] = pd.read_csv(path+pow+"/"+f+str(n)+".csv", skiprows=1)
       df[pow+f+str(n)]['Lin'] = 10**6 * 10**(df[pow+f+str(n)]['Amp']/10)
-      
+
       if n == files-1:
-        
+
         # Average across Lin columns
         df[pow+f] = {}
         df[pow+f]['Sum'] = df[pow+f+'0']['Lin']
-        
+
         for i in range(1,files):
           df[pow+f]['Sum'] = df[pow+f]['Sum'] + df[pow+f+str(i)]['Lin'] # Don't use +=
-          
+
         df[pow+f]['Avg'] = df[pow+f]['Sum'] / float(files)
-        
+
         df[pow+f]['Freq'] = df[pow+f+'0']['Freq']
         df[pow+f]['Sig'] = df[pow+f]['Avg']
-        
+
         # Calculate sigma
         df[pow+f]['Σ(i-avg)^2'] = (df[pow+f+'0']['Lin'] - df[pow+f]['Avg'])**2
         for i in range(1,n):
           df[pow+f]['Σ(i-avg)^2'] += (df[pow+f+str(i)]['Lin'] - df[pow+f]['Avg'])**2
-        
+
         df[pow+f]['σ'] = ((df[pow+f]['Σ(i-avg)^2']/float(files-1))**.5)/files**.5
-        
+
         # Subtract
         if f == 'ras':
           df[pow+'aS'] = pd.DataFrame({
@@ -67,7 +69,7 @@ for pow in powers:
             'Freq': df[pow+f]['Freq']/1e9,
             'sig': df[pow+'rs']['Sig'] - df[pow+'rs']['Sig'],
             'σ': (df[pow+'rs']['σ']**2 + df[pow+'bs']['σ']**2)**.5})
-      
+
 aS = dict(zip(powers, [df['0aS'], df['55aS'], df['110aS'], df['165aS']]))
 s = dict(zip(powers, [df['0s'], df['55s'], df['110s'], df['165s']]))
 
@@ -110,9 +112,10 @@ for pow in powers:
   plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25)
   plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=1, label=pow+' mW')
   #plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], .5, marker=".", color=palette[pow], )#label=pow+' mW')
-  
+
 plt.legend()
 plt.savefig(save + "P-P anti-Stokes Fits.pdf", format="pdf")
+plt.savefig(save + "P-P anti-Stokes Fits.png", format="png")
 
 # plot pow v wid
 npPowers = np.array([0, 55, 110, 165])
@@ -136,11 +139,4 @@ plt.scatter(npPowers, fwhm, 5, color=paletteList)
 plt.plot(npPowers, lin(npPowers, m, b), color="Black", linewidth=1)
 
 plt.savefig(save + "P-P anti-Stokes Pow v Wid.pdf", format="pdf")
-
-
-
-
-
-
-
-
+plt.savefig(save + "P-P anti-Stokes Pow v Wid.png", format="png")
