@@ -20,9 +20,8 @@ if len(sys.argv) > 0:
     note = sys.argv[1]
 
 # import data
-path = "/Users/joel/Research/LCOF Cooling/Data/221006 - THE P-O & P-P DATA/p-o/"
-base = "/Users/joel/Research/LCOF Cooling/Python/LCOF-Cooling/Plots/"
-save = base + timestamp.strftime("%Y-%b-%d") + "/P-O/" + timestamp.strftime("%X") + ": " + note + "/"
+path = "Data/221006 - THE P-O & P-P DATA/p-o/"
+save = "Plots/" + timestamp.strftime("%Y-%b-%d") + "/P-O/" + timestamp.strftime("%X") + ": " + note + "/"
 if not os.path.exists(save):
   os.makedirs(save)
 
