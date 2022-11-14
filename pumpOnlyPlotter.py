@@ -242,7 +242,7 @@ m, b = popt[0], popt[1]
 print(f"m: {m: .6f} \t\t b: {b: .2f}")
 
 plt.errorbar(npPowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
-plt.plot(np.array([10,290]), lin(np.array([10,290]), m, b), color="Black", linewidth=1)
+plt.plot(np.array([0,300]), lin(np.array([0,300]), m, b), color="Black", linewidth=1)
 
 plt.savefig(save + "P-O Height Ratios.pdf", format="pdf")
 plt.savefig(save + "P-O Height Ratios.png", format="png")
