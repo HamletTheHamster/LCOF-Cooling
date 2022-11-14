@@ -207,7 +207,7 @@ plt.plot(np.array([0,300]), lin(np.array([0,300]), maS, baS), color="Blue", line
 plt.errorbar(npPowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
 plt.plot(np.array([0,300]), lin(np.array([0,300]), ms, bs), color="Red", linewidth=1, label='Stokes')
 # P-P m: 0.0912, b: 96.8517
-plt.plot(np.array([0,300]), lin(np.array([0,300]), 0.0912, 96.8517), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
+#plt.plot(np.array([0,300]), lin(np.array([0,300]), 0.0912, 96.8517), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
 plt.legend()
 
 plt.savefig(save + "P-O Linewidths.pdf", format="pdf")
