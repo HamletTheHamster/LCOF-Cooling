@@ -207,8 +207,25 @@ plt.title("Pump-Only Linewidths")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("fwhm (MHz)")
 plt.xlim(0,300)
+plt.ylim(90,110)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
+
+#deltaT = T_roomTemp*(gamma_eff - gamma)/gamma_eff
+roomTemp = 293
+gamma = 2*np.pi*baS
+gammaEff = 2*np.pi*lin(300, maS, baS)
+deltaTaS = 293*(gammaEff - gamma)/gammaEff
+
+gamma = 2*np.pi*bs
+gammaEff = 2*np.pi*lin(300, ms, bs)
+deltaTS = 293*(gammaEff - gamma)/gammaEff
+print(f"degrees cooled: {deltaTaS: .4f} \t\t degrees heated: {deltaTS: .4f}")
+
+tempAxisMax = 293 + 293*(2*np.pi*110 - 2*np.pi*baS)/(2*np.pi*110)
+tempAxisMin = 293 + 293*(2*np.pi*90 - 2*np.pi*baS)/(2*np.pi*90)
+
+print(f"tempAxisMin: {tempAxisMin: .4f} \t\t tempAxisMax: {tempAxisMax: .4f}")
 
 plt.errorbar(npPowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
 plt.plot(np.array([0,300]), lin(np.array([0,300]), maS, baS), color="Blue", linewidth=1, label='anti-Stokes')
@@ -217,6 +234,10 @@ plt.plot(np.array([0,300]), lin(np.array([0,300]), ms, bs), color="Red", linewid
 # P-P m: 0.0912, b: 96.8517
 #plt.plot(np.array([0,300]), lin(np.array([0,300]), 0.0912, 96.8517), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
 plt.legend()
+
+ax2 = plt.twinx()
+ax2.set_ylabel('Temperature (K)')
+ax2.set_ylim(tempAxisMin,tempAxisMax)
 
 plt.savefig(save + "P-O Linewidths.pdf", format="pdf")
 plt.savefig(save + "P-O Linewidths.png", format="png")
