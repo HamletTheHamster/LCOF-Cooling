@@ -102,18 +102,21 @@ plt.tick_params(which='both', direction='in', pad=5)
 
 print("anti-Stokes")
 aSfwhm, aSfwhmσ = [], []
+aSAmp, aSAmpσ = {}, {}
 for pow in powers:
-  popt, pcov = curveFit(l, aS[pow]['Freq'], aS[pow]['Sig'], guess, sigma=aS[pow]['σ'], absolute_sigma=True)
-  amp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
-  aSfwhm.append(wid*1000)
-  print(pow)
-  print(f"Amp: {amp:.3f} μV \t Wid: {wid*1000:.3f} MHz \t Cen: {cen:.3f} GHz \t\t C: {c:.3f} μV")
-  #print(pcov)
-  σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
-  aSfwhmσ.append(σWid*1000)
-  print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
-  plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, alpha=.5, capsize=1, capthick=.25)
-  plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), linewidth=1, label=pow+' mW')
+      popt, pcov = curveFit(l, aS[pow]['Freq'], aS[pow]['Sig'], guess, sigma=aS[pow]['σ'], absolute_sigma=True)
+      amp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
+      aSfwhm.append(wid*1000)
+      aSAmp[pow] = amp
+      print(pow)
+      print(f"Amp: {amp:.3f} μV \t Wid: {wid*1000:.3f} MHz \t Cen: {cen:.3f} GHz \t\t C: {c:.3f} μV")
+      #print(pcov)
+      σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
+      aSfwhmσ.append(σWid*1000)
+      aSAmpσ[pow] = σAmp
+      print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
+      plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, alpha=.5, capsize=1, capthick=.25)
+      plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), linewidth=1, label=pow+' mW')
 
 plt.legend(fontsize=7.5)
 plt.savefig(save + "P-O anti-Stokes Fits.pdf", format="pdf")
@@ -154,15 +157,18 @@ plt.tick_params(which='both', direction='in', pad=5)
 
 print("Stokes")
 sfwhm, sfwhmσ = [], []
+sAmp, sAmpσ = {}, {}
 for pow in powers:
   popt, pcov = curveFit(l, s[pow]['Freq'], s[pow]['Sig'], guess, sigma=s[pow]['σ'], absolute_sigma=True)
   amp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
   sfwhm.append(wid*1000)
+  sAmp[pow] = amp
   print(pow)
   print(f"Amp: {amp:.3f} μV \t Wid: {wid*1000:.3f} MHz \t Cen: {cen:.3f} GHz \t\t C: {c:.3f} μV")
   #print(pcov)
   σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
   sfwhmσ.append(σWid*1000)
+  sAmpσ[pow] = σAmp
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
   plt.errorbar(s[pow]['Freq'], s[pow]['Sig'], yerr=s[pow]['σ'], fmt="None", elinewidth=.25, alpha=.5, capsize=1, capthick=.25)
   plt.plot(s[pow]['Freq'], l(s[pow]['Freq'], *popt), linewidth=1, label=pow+' mW')
@@ -170,6 +176,7 @@ for pow in powers:
 plt.legend(fontsize=7.5)
 plt.savefig(save + "P-O Stokes Fits.pdf", format="pdf")
 plt.savefig(save + "P-O Stokes Fits.png", format="png")
+
 
 # plot pow v wid
 npPowers = np.arange(10, 291, 20)
@@ -193,6 +200,7 @@ plt.plot(np.array([0,300]), lin(np.array([0,300]), ms, bs), color="Black", linew
 plt.savefig(save + "P-O Stokes Pow v Wid.pdf", format="pdf")
 plt.savefig(save + "P-O Stokes Pow v Wid.png", format="png")
 
+
 # plot linewidths
 plt.figure(dpi=250)
 plt.title("Pump-Only Linewidths")
@@ -212,3 +220,29 @@ plt.legend()
 
 plt.savefig(save + "P-O Linewidths.pdf", format="pdf")
 plt.savefig(save + "P-O Linewidths.png", format="png")
+
+
+# plot height ratios
+plt.figure(dpi=250)
+plt.title("Pump-Only Height Ratios")
+plt.xlabel("Pump Power (mW)")
+plt.ylabel("Stokes/anti-Stokes Amplitude")
+plt.xlim(0,300)
+plt.minorticks_on()
+plt.tick_params(which='both', direction='in', pad=5)
+
+ratios, ampErr = [], []
+for pow in powers:
+    ratios.append(sAmp[pow]/aSAmp[pow])
+    ampErr.append(((aSAmpσ[pow]/aSAmp[pow])**2 + (sAmpσ[pow]/sAmp[pow])**2)**.5)
+
+npPowers = np.arange(10, 291, 20)
+popt, pcov = curveFit(lin, npPowers, ratios, [.1, 1], sigma=ampErr, absolute_sigma=True)
+m, b = popt[0], popt[1]
+print(f"m: {m: .6f} \t\t b: {b: .2f}")
+
+plt.errorbar(npPowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
+plt.plot(np.array([10,290]), lin(np.array([10,290]), m, b), color="Black", linewidth=1)
+
+plt.savefig(save + "P-O Height Ratios.pdf", format="pdf")
+plt.savefig(save + "P-O Height Ratios.png", format="png")
