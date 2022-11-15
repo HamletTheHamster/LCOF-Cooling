@@ -26,6 +26,10 @@ if not os.path.exists(save):
   os.makedirs(save)
 
 powers = ['0', '55', '110', '165']
+truePowers = []
+for pow in powers:
+    truePowers.append(float(pow)*.17**.5)
+
 file = ['bas', 'ras', 'bs', 'rs']
 files = 5
 
@@ -98,7 +102,7 @@ plt.tick_params(which='minor', axis='y', length=0)
 paletteDict = {'0': (31/255, 211/255, 172/255), '55': (255/255, 122/255, 180/255), '110': (122/255, 156/255, 255/255), '165': (255/255, 182/255, 110/255)}
 
 fwhm, fwhmσ = [], []
-for pow in powers:
+for (pow, truPow) in zip(powers, truePowers):
   popt, pcov = curveFit(l, aS['0']['Freq'], aS[pow]['Sig'], guess, sigma=aS[pow]['σ'], absolute_sigma=True)
   amp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
   fwhm.append(wid*1000)
@@ -109,16 +113,15 @@ for pow in powers:
   fwhmσ.append(σWid*1000)
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
   plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25)
-  plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=1, label=pow+' mW')
-  #plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], .5, marker=".", color=palette[pow], )#label=pow+' mW')
+  plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=1, label=f"{truPow: .2f}"+' mW')
+  #plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], .5, marker=".", color=palette[pow], )#label=f"{truPow: .2f}"+' mW')
 
 plt.legend()
 plt.savefig(save + "P-P anti-Stokes Fits.pdf", format="pdf")
 plt.savefig(save + "P-P anti-Stokes Fits.png", format="png")
 
 # plot pow v wid
-npPowers = np.array([0, 55, 110, 165])
-popt, pcov = curveFit(lin, npPowers, fwhm, [.1, 96.], sigma=fwhmσ, absolute_sigma=True)
+popt, pcov = curveFit(lin, truePowers, fwhm, [.1, 96.], sigma=fwhmσ, absolute_sigma=True)
 m, b = popt[0], popt[1]
 print(f"m: {m:.4f}, b: {b:.4f}")
 
@@ -128,14 +131,14 @@ plt.figure(dpi=250)
 plt.title("Pump-Probe anti-Stokes Pow v Wid")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("fwhm (MHz)")
-#plt.xlim()
+plt.xlim(-2,72)
 #plt.ylim()
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.errorbar(npPowers, fwhm, yerr=fwhmσ, fmt="None", elinewidth=.5, color='Gray', alpha=.5, capsize=1, capthick=.5)
-plt.scatter(npPowers, fwhm, 5, color=paletteList)
-plt.plot(npPowers, lin(npPowers, m, b), color="Black", linewidth=1)
+plt.errorbar(truePowers, fwhm, yerr=fwhmσ, fmt="None", elinewidth=.5, color='Gray', alpha=.5, capsize=1, capthick=.5)
+plt.scatter(truePowers, fwhm, 5, color=paletteList)
+plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="Black", linewidth=1)
 
 plt.savefig(save + "P-P anti-Stokes Pow v Wid.pdf", format="pdf")
 plt.savefig(save + "P-P anti-Stokes Pow v Wid.png", format="png")
