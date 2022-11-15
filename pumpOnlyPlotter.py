@@ -111,7 +111,7 @@ for (pow, truPow) in zip(powers, truePowers):
       amp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
       aSfwhm.append(wid*1000)
       aSAmp[pow] = amp
-      print(pow)
+      print(f"pow: {pow} \t truPow: {truPow: .4f}")
       print(f"Amp: {amp:.3f} μV \t Wid: {wid*1000:.3f} MHz \t Cen: {cen:.3f} GHz \t\t C: {c:.3f} μV")
       #print(pcov)
       σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
@@ -165,7 +165,7 @@ for (pow, truPow) in zip(powers, truePowers):
   amp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
   sfwhm.append(wid*1000)
   sAmp[pow] = amp
-  print(pow)
+  print(f"pow: {pow} \t truPow: {truPow: .4f}")
   print(f"Amp: {amp:.3f} μV \t Wid: {wid*1000:.3f} MHz \t Cen: {cen:.3f} GHz \t\t C: {c:.3f} μV")
   #print(pcov)
   σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
@@ -234,6 +234,10 @@ plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='
 plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Red", linewidth=1, label='Stokes')
 #ppm, ppb = 0.2213, 97.7640
 #plt.plot(np.array([0,125]), lin(np.array([0,125]), ppm, ppb), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
+
+# gamma_eff = 2pi*gamma_eff(1 + GPL/4) # G = 3.025
+#gammaEff = 98.5985 + 98.5985*3.025*.119315*1.00/4
+#plt.plot(np.array([0,125]), np.array([98.5985,gammaEff]), color="Black", linewidth=1, label='find gain')
 plt.legend()
 
 ax2 = plt.twinx()
