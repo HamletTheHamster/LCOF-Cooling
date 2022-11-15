@@ -27,6 +27,10 @@ if not os.path.exists(save):
 
 powers = ['10', '30', '50', '70', '90', '110', '130', '150', '170', '190',
           '210', '230', '250', '270', '290']
+truePowers = []
+for pow in powers:
+    truePowers.append(float(pow)*.17**.5)
+
 file = ['bas', 'ras', 'bs', 'rs']
 files = 5
 
@@ -103,7 +107,7 @@ plt.tick_params(which='both', direction='in', pad=5)
 print("anti-Stokes")
 aSfwhm, aSfwhmσ = [], []
 aSAmp, aSAmpσ = {}, {}
-for pow in powers:
+for (pow, truPow) in zip(powers, truePowers):
       popt, pcov = curveFit(l, aS[pow]['Freq'], aS[pow]['Sig'], guess, sigma=aS[pow]['σ'], absolute_sigma=True)
       amp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
       aSfwhm.append(wid*1000)
@@ -116,15 +120,14 @@ for pow in powers:
       aSAmpσ[pow] = σAmp
       print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
       plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, alpha=.5, capsize=1, capthick=.25)
-      plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), linewidth=1, label=pow+' mW')
+      plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), linewidth=1, label=f"{truPow: .2f}"+' mW')
 
 plt.legend(fontsize=7.5)
 plt.savefig(save + "P-O anti-Stokes Fits.pdf", format="pdf")
 plt.savefig(save + "P-O anti-Stokes Fits.png", format="png")
 
 # plot pow v wid
-npPowers = np.arange(10, 291, 20)
-popt, pcov = curveFit(lin, npPowers, aSfwhm, [.1, 100], sigma=aSfwhmσ, absolute_sigma=True)
+popt, pcov = curveFit(lin, truePowers, aSfwhm, [.1, 100], sigma=aSfwhmσ, absolute_sigma=True)
 maS, baS = popt[0], popt[1]
 print(f"m: {maS:.4f}, b: {baS:.4f}")
 
@@ -132,14 +135,14 @@ plt.figure(dpi=250)
 plt.title("Pump-Only anti-Stokes Pow v Wid")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("fwhm (MHz)")
-plt.xlim(0,300)
+plt.xlim(0,125)
 #plt.ylim()
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.errorbar(npPowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Gray', alpha=.5, capsize=1, capthick=.5)
-#plt.scatter(npPowers, aSfwhm, 1)
-plt.plot(np.array([0,300]), lin(np.array([0,300]), maS, baS), color="Black", linewidth=1)
+plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
+#plt.scatter(truePowers, aSfwhm, 1)
+plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Black", linewidth=1)
 
 plt.savefig(save + "P-O anti-Stokes Pow v Wid.pdf", format="pdf")
 plt.savefig(save + "P-O anti-Stokes Pow v Wid.png", format="png")
@@ -158,7 +161,7 @@ plt.tick_params(which='both', direction='in', pad=5)
 print("Stokes")
 sfwhm, sfwhmσ = [], []
 sAmp, sAmpσ = {}, {}
-for pow in powers:
+for (pow, truPow) in zip(powers, truePowers):
   popt, pcov = curveFit(l, s[pow]['Freq'], s[pow]['Sig'], guess, sigma=s[pow]['σ'], absolute_sigma=True)
   amp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
   sfwhm.append(wid*1000)
@@ -170,8 +173,8 @@ for pow in powers:
   sfwhmσ.append(σWid*1000)
   sAmpσ[pow] = σAmp
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
-  plt.errorbar(s[pow]['Freq'], s[pow]['Sig'], yerr=s[pow]['σ'], fmt="None", elinewidth=.25, alpha=.5, capsize=1, capthick=.25)
-  plt.plot(s[pow]['Freq'], l(s[pow]['Freq'], *popt), linewidth=1, label=pow+' mW')
+  plt.errorbar(s[pow]['Freq'], s[pow]['Sig'], yerr=s[pow]['σ'], fmt="None", elinewidth=.25, color='Red', alpha=.5, capsize=1, capthick=.25)
+  plt.plot(s[pow]['Freq'], l(s[pow]['Freq'], *popt), linewidth=1, label=f"{truPow: .2f}"+' mW')
 
 plt.legend(fontsize=7.5)
 plt.savefig(save + "P-O Stokes Fits.pdf", format="pdf")
@@ -179,8 +182,7 @@ plt.savefig(save + "P-O Stokes Fits.png", format="png")
 
 
 # plot pow v wid
-npPowers = np.arange(10, 291, 20)
-popt, pcov = curveFit(lin, npPowers, sfwhm, [.1, 100], sigma=sfwhmσ, absolute_sigma=True)
+popt, pcov = curveFit(lin, truePowers, sfwhm, [.1, 100], sigma=sfwhmσ, absolute_sigma=True)
 ms, bs = popt[0], popt[1]
 print(f"m: {ms:.4f}, b: {bs:.4f}")
 
@@ -188,14 +190,14 @@ plt.figure(dpi=250)
 plt.title("Pump-Only Stokes Pow v Wid")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("fwhm (MHz)")
-plt.xlim(0,300)
+plt.xlim(0,125)
 #plt.ylim()
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.errorbar(npPowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Gray', alpha=.5, capsize=1, capthick=.5)
-#plt.scatter(npPowers, sfwhm, 1)
-plt.plot(np.array([0,300]), lin(np.array([0,300]), ms, bs), color="Black", linewidth=1)
+plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
+#plt.scatter(truePowers, sfwhm, 1)
+plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Black", linewidth=1)
 
 plt.savefig(save + "P-O Stokes Pow v Wid.pdf", format="pdf")
 plt.savefig(save + "P-O Stokes Pow v Wid.png", format="png")
@@ -206,7 +208,7 @@ plt.figure(dpi=250)
 plt.title("Pump-Only Linewidths")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("fwhm (MHz)")
-plt.xlim(0,300)
+plt.xlim(0,125)
 plt.ylim(90,110)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
@@ -218,7 +220,7 @@ gammaEff = 2*np.pi*lin(300, maS, baS)
 deltaTaS = 293*(gammaEff - gamma)/gammaEff
 
 gamma = 2*np.pi*bs
-gammaEff = 2*np.pi*lin(300, ms, bs)
+gammaEff = 2*np.pi*lin(125, ms, bs)
 deltaTS = 293*(gammaEff - gamma)/gammaEff
 print(f"degrees cooled: {deltaTaS: .4f} \t\t degrees heated: {deltaTS: .4f}")
 
@@ -227,12 +229,12 @@ tempAxisMin = 293 + 293*(2*np.pi*90 - 2*np.pi*baS)/(2*np.pi*90)
 
 print(f"tempAxisMin: {tempAxisMin: .4f} \t\t tempAxisMax: {tempAxisMax: .4f}")
 
-plt.errorbar(npPowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
-plt.plot(np.array([0,300]), lin(np.array([0,300]), maS, baS), color="Blue", linewidth=1, label='anti-Stokes')
-plt.errorbar(npPowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
-plt.plot(np.array([0,300]), lin(np.array([0,300]), ms, bs), color="Red", linewidth=1, label='Stokes')
+plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
+plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Blue", linewidth=1, label='anti-Stokes')
+plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
+plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Red", linewidth=1, label='Stokes')
 # P-P m: 0.0912, b: 96.8517
-#plt.plot(np.array([0,300]), lin(np.array([0,300]), 0.0912, 96.8517), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
+#plt.plot(np.array([0,125]), lin(np.array([0,125]), 0.0912, 96.8517), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
 plt.legend()
 
 ax2 = plt.twinx()
@@ -248,7 +250,7 @@ plt.figure(dpi=250)
 plt.title("Pump-Only Height Ratios")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("Stokes/anti-Stokes Amplitude")
-plt.xlim(0,300)
+plt.xlim(0,125)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
@@ -257,13 +259,12 @@ for pow in powers:
     ratios.append(sAmp[pow]/aSAmp[pow])
     ampErr.append(((aSAmpσ[pow]/aSAmp[pow])**2 + (sAmpσ[pow]/sAmp[pow])**2)**.5)
 
-npPowers = np.arange(10, 291, 20)
-popt, pcov = curveFit(lin, npPowers, ratios, [.1, 1], sigma=ampErr, absolute_sigma=True)
+popt, pcov = curveFit(lin, truePowers, ratios, [.1, 1], sigma=ampErr, absolute_sigma=True)
 m, b = popt[0], popt[1]
 print(f"m: {m: .6f} \t\t b: {b: .2f}")
 
-plt.errorbar(npPowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
-plt.plot(np.array([0,300]), lin(np.array([0,300]), m, b), color="Black", linewidth=1)
+plt.errorbar(truePowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Green', alpha=.5, capsize=1, capthick=.5)
+plt.plot(np.array([0,125]), lin(np.array([0,125]), m, b), color="Black", linewidth=1)
 
 plt.savefig(save + "P-O Height Ratios.pdf", format="pdf")
 plt.savefig(save + "P-O Height Ratios.png", format="png")
