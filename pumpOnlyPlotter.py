@@ -25,8 +25,7 @@ save = "Plots/" + timestamp.strftime("%Y-%b-%d") + "/P-O/" + timestamp.strftime(
 if not os.path.exists(save):
   os.makedirs(save)
 
-powers = ['10', '30', '50', '70', '90', '110', '130', '150', '170', '190',
-          '210', '230', '250', '270', '290']
+powers = ['10', '30', '50', '70', '90', '110', '130', '150', '170', '190', '210', '230', '250', '270', '290']
 truePowers = []
 for pow in powers:
     truePowers.append(float(pow)*.17**.5)
@@ -233,8 +232,8 @@ plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color
 plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Blue", linewidth=1, label='anti-Stokes')
 plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Red", linewidth=1, label='Stokes')
-# P-P m: 0.0912, b: 96.8517
-#plt.plot(np.array([0,125]), lin(np.array([0,125]), 0.0912, 96.8517), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
+#ppm, ppb = 0.2213, 97.7640
+#plt.plot(np.array([0,125]), lin(np.array([0,125]), ppm, ppb), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
 plt.legend()
 
 ax2 = plt.twinx()
