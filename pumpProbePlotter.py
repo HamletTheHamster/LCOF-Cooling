@@ -142,3 +142,27 @@ plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="Black", linewid
 
 plt.savefig(save + "P-P anti-Stokes Pow v Wid.pdf", format="pdf")
 plt.savefig(save + "P-P anti-Stokes Pow v Wid.png", format="png")
+
+# normalized plots
+aSnorm = {}
+for (pow, truPow) in zip(powers, truePowers):
+    aSnorm[pow] = pd.DataFrame({
+    'Freq': aS[pow]['Freq'],
+    'Sig': aS[pow]['Sig']/aS[pow]['Sig'].max(axis=0),
+    'σ': aS[pow]['σ']/aS[pow]['σ'].max(axis=0)})
+
+    plt.figure(dpi=250)
+    plt.title("Pump-Probe anti-Stokes")
+    plt.xlabel("Frequency (GHz)")
+    plt.ylabel("Spectral Density (μV)")
+    plt.xlim(2,2.5)
+    plt.ylim(0,2)
+    plt.minorticks_on()
+    plt.tick_params(which='both', direction='in', pad=5)
+    plt.tick_params(which='minor', axis='y', length=0)
+
+    plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25, label=f"{truPow: .2f}"+' mW')
+
+    #plt.legend()
+    plt.savefig(f"{save} P-P Normalized anti-Stokes Fits {pow}.pdf", format="pdf")
+    plt.savefig(f"{save} P-P Normalized anti-Stokes Fits {pow}.png", format="png")
