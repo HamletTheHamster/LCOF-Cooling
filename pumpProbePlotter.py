@@ -80,11 +80,14 @@ s = dict(zip(powers, [df['0s'], df['55s'], df['110s'], df['165s']]))
 a, w, ce, c = 1.75, .1, 2.275, .06
 
 def l(x, amp, wid, cen, c):
-  # fwhm wid lorentzian
-  return amp * wid**2 / (wid**2 + ((x-cen))**2) + c
+    # fwhm wid lorentzian
+    return amp * wid**2 / (wid**2 + (x-cen)**2) + c
 
 def lin(x, m, b):
-  return m*x+b
+    return m*x+b
+
+def lnorm(x, gamma_0, gamma_eff, cen):
+     return gamma_0**2 / (gamma_eff**2 + (x-cen)**2)
 
 guess = a, w, ce, c
 
@@ -144,6 +147,7 @@ plt.savefig(f"{save} P-P anti-Stokes Pow v Wid.pdf", format="pdf")
 plt.savefig(f"{save} P-P anti-Stokes Pow v Wid.png", format="png")
 
 # normalized plots
+pumpOnlyGamma_eff = {'0': 97.5e-3/2, '55': 99.793e-3/2, '110': 102.325e-3/2, '165': 103.267e-3/2}
 aSnorm = {}
 for (pow, truPow) in zip(powers, truePowers):
     aSnorm[pow] = pd.DataFrame({
@@ -162,6 +166,7 @@ for (pow, truPow) in zip(powers, truePowers):
     plt.tick_params(which='minor', axis='y', length=0)
 
     plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25)
+    plt.plot(aSnorm[pow]['Freq'], lnorm(aS[pow]['Freq'], 97.5e-3/2, pumpOnlyGamma_eff[pow], 2.269))
 
     #plt.legend()
     plt.savefig(f"{save} P-P Normalized anti-Stokes Fits {pow}.pdf", format="pdf")
