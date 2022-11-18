@@ -117,8 +117,8 @@ for (pow, truPow) in zip(powers, truePowers):
   #plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], .5, marker=".", color=palette[pow], )#label=f"{truPow: .2f}"+' mW')
 
 plt.legend()
-plt.savefig(save + "P-P anti-Stokes Fits.pdf", format="pdf")
-plt.savefig(save + "P-P anti-Stokes Fits.png", format="png")
+plt.savefig(f"{save} P-P anti-Stokes Fits.pdf", format="pdf")
+plt.savefig(f"{save} P-P anti-Stokes Fits.png", format="png")
 
 # plot pow v wid
 popt, pcov = curveFit(lin, truePowers, fwhm, [.1, 96.], sigma=fwhmσ, absolute_sigma=True)
@@ -140,8 +140,8 @@ plt.errorbar(truePowers, fwhm, yerr=fwhmσ, fmt="None", elinewidth=.5, color='Gr
 plt.scatter(truePowers, fwhm, 5, color=paletteList)
 plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="Black", linewidth=1)
 
-plt.savefig(save + "P-P anti-Stokes Pow v Wid.pdf", format="pdf")
-plt.savefig(save + "P-P anti-Stokes Pow v Wid.png", format="png")
+plt.savefig(f"{save} P-P anti-Stokes Pow v Wid.pdf", format="pdf")
+plt.savefig(f"{save} P-P anti-Stokes Pow v Wid.png", format="png")
 
 # normalized plots
 aSnorm = {}
@@ -149,10 +149,10 @@ for (pow, truPow) in zip(powers, truePowers):
     aSnorm[pow] = pd.DataFrame({
     'Freq': aS[pow]['Freq'],
     'Sig': aS[pow]['Sig']/aS[pow]['Sig'].max(axis=0),
-    'σ': aS[pow]['σ']/aS[pow]['σ'].max(axis=0)})
+    'σ': aS[pow]['σ']/aS[pow]['Sig'].max(axis=0)})
 
     plt.figure(dpi=250)
-    plt.title("Pump-Probe anti-Stokes")
+    plt.title(f"{pow} mW Normalized Pump-Probe anti-Stokes")
     plt.xlabel("Frequency (GHz)")
     plt.ylabel("Spectral Density (μV)")
     plt.xlim(2,2.5)
@@ -161,7 +161,7 @@ for (pow, truPow) in zip(powers, truePowers):
     plt.tick_params(which='both', direction='in', pad=5)
     plt.tick_params(which='minor', axis='y', length=0)
 
-    plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25, label=f"{truPow: .2f}"+' mW')
+    plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25)
 
     #plt.legend()
     plt.savefig(f"{save} P-P Normalized anti-Stokes Fits {pow}.pdf", format="pdf")
