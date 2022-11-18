@@ -147,7 +147,7 @@ plt.savefig(f"{save} P-P anti-Stokes Pow v Wid.pdf", format="pdf")
 plt.savefig(f"{save} P-P anti-Stokes Pow v Wid.png", format="png")
 
 # normalized plots
-pumpOnlyGamma_eff = {'0': 97.5e-3/2, '55': 99.793e-3/2, '110': 102.325e-3/2, '165': 103.267e-3/2}
+pumpOnlyGamma_eff = {'0': 97.5e-3/2, '55': 100.213e-3/2, '110': 101.828e-3/2, '165': 103.442e-3/2}
 aSnorm = {}
 for (pow, truPow) in zip(powers, truePowers):
     aSnorm[pow] = pd.DataFrame({
@@ -156,7 +156,7 @@ for (pow, truPow) in zip(powers, truePowers):
     'σ': aS[pow]['σ']/aS[pow]['Sig'].max(axis=0)})
 
     plt.figure(dpi=250)
-    plt.title(f"{pow} mW Normalized Pump-Probe anti-Stokes")
+    plt.title(f"{truPow: .2f} mW Normalized Pump-Probe anti-Stokes")
     plt.xlabel("Frequency (GHz)")
     plt.ylabel("Spectral Density (μV)")
     plt.xlim(2,2.5)
@@ -165,9 +165,9 @@ for (pow, truPow) in zip(powers, truePowers):
     plt.tick_params(which='both', direction='in', pad=5)
     plt.tick_params(which='minor', axis='y', length=0)
 
-    plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25)
-    plt.plot(aSnorm[pow]['Freq'], lnorm(aS[pow]['Freq'], 97.5e-3/2, pumpOnlyGamma_eff[pow], 2.269))
+    plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25, label=f"{truPow: .2f} mW Pump-Probe Data")
+    plt.plot(aSnorm[pow]['Freq'], lnorm(aS[pow]['Freq'], 97.315e-3/2, pumpOnlyGamma_eff[pow], 2.269), color=paletteDict[pow], linewidth=1, label=f"{truPow: .2f} mW Pump-Only Synthesized")
 
-    #plt.legend()
+    plt.legend()
     plt.savefig(f"{save} P-P Normalized anti-Stokes Fits {pow}.pdf", format="pdf")
     plt.savefig(f"{save} P-P Normalized anti-Stokes Fits {pow}.png", format="png")
