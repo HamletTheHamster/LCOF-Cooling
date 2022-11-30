@@ -289,3 +289,25 @@ plt.plot(np.array([0,125]), lin(np.array([0,125]), m, b), color="Black", linewid
 
 plt.savefig(save + "P-O Height Ratios.pdf", format="pdf")
 plt.savefig(save + "P-O Height Ratios.png", format="png")
+
+
+# plot peak height normalized by power vs power, s & aS same plot, pts only
+plt.figure(dpi=250)
+plt.title("Power-normalized Peak Height vs Power")
+plt.xlabel("Pump Power (mW)")
+plt.ylabel("Power-normalized Peak Height")
+plt.xlim(0,125)
+#plt.ylim()
+plt.minorticks_on()
+plt.tick_params(which='both', direction='in', pad=5)
+
+aSAmpNorm, sAmpNorm = [], []
+for (pow, truPow) in zip(powers, truePowers):
+    aSAmpNorm.append(aSAmp[pow]/truPow)
+    sAmpNorm.append(sAmp[pow]/truPow)
+
+plt.scatter(truePowers, aSAmpNorm, 1, color="blue", label="anti-Stokes")
+plt.scatter(truePowers, sAmpNorm, 1, color="red", label="Stokes")
+plt.legend()
+plt.savefig(f"{save} P-O Pow-norm Heights vs Pow.pdf", format="pdf")
+plt.savefig(f"{save} P-O Pow-norm Heights vs Pow.png", format="png")
