@@ -246,9 +246,12 @@ tempAxisMin = 293 + 293*(2*np.pi*90 - 2*np.pi*baS)/(2*np.pi*90)
 
 print(f"tempAxisMin: {tempAxisMin: .4f} \t\t tempAxisMax: {tempAxisMax: .4f}")
 
-plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
+plt.scatter(truePowers, aSfwhm, 1, color="blue", label="anti-Stokes")
+plt.scatter(truePowers, sfwhm, 1, color="red", label="Stokes")
+
+#plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Blue", linewidth=1, label='anti-Stokes')
-plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
+#plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Red", linewidth=1, label='Stokes')
 #ppm, ppb = 0.2213, 97.7640
 #plt.plot(np.array([0,125]), lin(np.array([0,125]), ppm, ppb), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
