@@ -323,6 +323,11 @@ sim = pd.DataFrame({
     'Sig': simData['gb']
 })
 
+popt, pcov = curveFit(l, sim['Freq'], sim['Sig'], guess)
+simAmp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
+
+aS['10']['ScaledSig'] = aS['10']['Sig']*(simAmp/aSAmp['10'])
+
 plt.figure(dpi=250)
 plt.title("10 mW anti-Stokes Pump-Only Power")
 plt.xlabel("Frequency (GHz)")
@@ -332,7 +337,7 @@ plt.xlim(2,2.5)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.scatter(aS['10']['Freq'], aS['10']['Sig'], 1, label='Observed Data')
+plt.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 1, label='Observed Data')
 plt.scatter(sim['Freq'], sim['Sig'], 1, label='Simulation')
 
 plt.legend(fontsize=7.5)
