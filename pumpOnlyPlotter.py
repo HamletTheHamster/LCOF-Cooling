@@ -103,6 +103,13 @@ plt.ylim(0,120)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
+blueGradient = []
+for i in range(len(powers)):
+    mod = 11.4*i/255
+    blueGradient.append((0+mod, 0+mod, (84/255)+mod))
+
+blueGrad = dict(zip(powers, blueGradient))
+
 print("anti-Stokes")
 aSfwhm, aSfwhmσ = [], []
 aSAmp, aSAmpσ = {}, {}
@@ -118,8 +125,9 @@ for (pow, truPow) in zip(powers, truePowers):
       aSfwhmσ.append(σWid*1000)
       aSAmpσ[pow] = σAmp
       print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
-      plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, alpha=.5, capsize=1, capthick=.25)
-      plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), linewidth=1, label=f"{truPow: .2f}"+' mW')
+      plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], 1, color=blueGrad[pow], label=f"{truPow: .2f}"+" mW")
+      #plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, alpha=.5, capsize=1, capthick=.25)
+      #plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=blueGrad[pow], linewidth=1, label=f"{truPow: .2f}"+' mW')
 
 plt.legend(fontsize=7.5)
 plt.savefig(save + "P-O anti-Stokes Fits.pdf", format="pdf")
@@ -157,6 +165,14 @@ plt.ylim(0,120)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
+redGradient = []
+for i in range(len(powers)):
+    mod = 11.4*i/255
+    redGradient.append(((84/255)+mod, 0+mod, 0+mod))
+
+redGradient.reverse()
+redGrad = dict(zip(powers, redGradient))
+
 print("Stokes")
 sfwhm, sfwhmσ = [], []
 sAmp, sAmpσ = {}, {}
@@ -172,8 +188,9 @@ for (pow, truPow) in zip(powers, truePowers):
   sfwhmσ.append(σWid*1000)
   sAmpσ[pow] = σAmp
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
-  plt.errorbar(s[pow]['Freq'], s[pow]['Sig'], yerr=s[pow]['σ'], fmt="None", elinewidth=.25, color='Red', alpha=.5, capsize=1, capthick=.25)
-  plt.plot(s[pow]['Freq'], l(s[pow]['Freq'], *popt), linewidth=1, label=f"{truPow: .2f}"+' mW')
+  plt.scatter(s[pow]['Freq'], s[pow]['Sig'], 1, color=redGrad[pow], label=f"{truPow: .2f}"+" mW")
+  #plt.errorbar(s[pow]['Freq'], s[pow]['Sig'], yerr=s[pow]['σ'], fmt="None", elinewidth=.25, color='Red', alpha=.5, capsize=1, capthick=.25)
+  #plt.plot(s[pow]['Freq'], l(s[pow]['Freq'], *popt), linewidth=1, label=f"{truPow: .2f}"+' mW')
 
 plt.legend(fontsize=7.5)
 plt.savefig(save + "P-O Stokes Fits.pdf", format="pdf")
