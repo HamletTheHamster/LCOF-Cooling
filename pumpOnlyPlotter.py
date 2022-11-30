@@ -324,9 +324,9 @@ sim = pd.DataFrame({
 })
 
 plt.figure(dpi=250)
-plt.title("Simulated Lowest Pump-Only Power Spectra")
+plt.title("10 mW Pump-Only Power")
 plt.xlabel("Frequency (GHz)")
-plt.ylabel("Simulated Spectral Density")
+plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
 #plt.ylim()
 plt.minorticks_on()
