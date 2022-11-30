@@ -324,7 +324,7 @@ sim = pd.DataFrame({
 })
 
 plt.figure(dpi=250)
-plt.title("10 mW Pump-Only Power")
+plt.title("10 mW anti-Stokes Pump-Only Power")
 plt.xlabel("Frequency (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
@@ -332,9 +332,9 @@ plt.xlim(2,2.5)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.scatter(aS['10']['Freq'], aS['10']['Sig'], 1, label='10 mW Pump aS')
+plt.scatter(aS['10']['Freq'], aS['10']['Sig'], 1, label='Observed Data')
 plt.scatter(sim['Freq'], sim['Sig'], 1, label='Simulation')
 
 plt.legend(fontsize=7.5)
 plt.savefig(f"{save} P-O Simulation.pdf", format="pdf")
-plt.savefig(f"{save} P-P Simulation.png", format="png")
+plt.savefig(f"{save} P-O Simulation.png", format="png")
