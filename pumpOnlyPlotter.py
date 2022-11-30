@@ -343,7 +343,11 @@ plt.legend(fontsize=7.5)
 
 ax2 = plt.twinx()
 ax2.set_ylabel('GB (s³/(kg·m³))')
-#ax2.set_ylim(tempAxisMin,tempAxisMax)
+
+simAxisMin = -0.1*(simAmp/aSAmp['10'])
+simAxisMax = 3.1*(simAmp/aSAmp['10'])
+
+ax2.set_ylim(simAxisMin, simAxisMax)
 
 plt.savefig(f"{save} P-O Simulation.pdf", format="pdf")
 plt.savefig(f"{save} P-O Simulation.png", format="png")
