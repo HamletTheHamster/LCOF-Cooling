@@ -175,7 +175,7 @@ for (pow, truPow) in zip(powers, truePowers):
 
     plt.scatter(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], 1, color=blueGrad[pow])#, label=f"{truPow: .2f}"+" mW")
     #plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25, label=f"{truPow: .2f} mW Pump-Probe Data")
-    #plt.plot(aSnorm[pow]['Freq'], lnorm(aS[pow]['Freq'], 97.315e-3/2, pumpOnlyGamma_eff[pow], 2.269), color=paletteDict[pow], linewidth=1, label=f"{truPow: .2f} mW Pump-Only Synthesized")
+    plt.plot(aSnorm[pow]['Freq'], lnorm(aS[pow]['Freq'], 97.315e-3/2, pumpOnlyGamma_eff[pow], 2.269), color=blueGrad[pow], linewidth=1, label=f"{truPow: .2f} mW Pump-Only Synthesized")
 
 #plt.legend()
 plt.savefig(f"{save} P-P Normalized anti-Stokes Fits.pdf", format="pdf")
