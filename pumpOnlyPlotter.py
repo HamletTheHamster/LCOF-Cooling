@@ -339,7 +339,11 @@ plt.tick_params(which='both', direction='in', pad=5)
 
 plt.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 1, label='Observed Data')
 plt.scatter(sim['Freq'], sim['Sig'], 1, label='Simulation')
-
 plt.legend(fontsize=7.5)
+
+ax2 = plt.twinx()
+ax2.set_ylabel('GB (s³/(kg·m³))')
+#ax2.set_ylim(tempAxisMin,tempAxisMax)
+
 plt.savefig(f"{save} P-O Simulation.pdf", format="pdf")
 plt.savefig(f"{save} P-O Simulation.png", format="png")
