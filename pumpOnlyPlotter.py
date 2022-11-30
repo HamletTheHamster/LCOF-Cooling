@@ -314,3 +314,26 @@ plt.scatter(truePowers, sAmpNorm, 1, color="red", label="Stokes")
 plt.legend()
 plt.savefig(f"{save} P-O Pow-norm Heights vs Pow.pdf", format="pdf")
 plt.savefig(f"{save} P-O Pow-norm Heights vs Pow.png", format="png")
+
+
+#Simulation data GB_797nm_LCOF (Nov 30, 2022 email from ryan)
+simData = pd.read_csv("Simulations/simulated_GB_797nm_LCOF.csv", skiprows=5)
+sim = pd.DataFrame({
+    'Freq': simData['freq']/1e9,
+    'Sig': simData['gb']
+})
+
+plt.figure(dpi=250)
+plt.title("Simulated Lowest Pump-Only Power Spectra")
+plt.xlabel("Frequency (GHz)")
+plt.ylabel("Simulated Spectral Density")
+plt.xlim(2,2.5)
+#plt.ylim()
+plt.minorticks_on()
+plt.tick_params(which='both', direction='in', pad=5)
+
+plt.scatter(sim['Freq'], sim['Sig'], 1)
+plt.scatter(aS['10']['Freq'], aS['10']['Sig'], 1)
+
+plt.savefig(f"{save} P-O Simulation.pdf", format="pdf")
+plt.savefig(f"{save} P-P Simulation.png", format="png")
