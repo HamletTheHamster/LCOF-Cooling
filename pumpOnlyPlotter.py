@@ -105,9 +105,10 @@ plt.tick_params(which='both', direction='in', pad=5)
 
 blueGradient = []
 for i in range(len(powers)):
-    mod = 11.4*i/255
-    blueGradient.append((0+mod, 0+mod, (84/255)+mod))
+    mod = (185/15)*i/255
+    blueGradient.append((0+mod, 0+mod, 1))
 
+#blueGradient.reverse()
 blueGrad = dict(zip(powers, blueGradient))
 
 print("anti-Stokes")
@@ -167,10 +168,10 @@ plt.tick_params(which='both', direction='in', pad=5)
 
 redGradient = []
 for i in range(len(powers)):
-    mod = 11.4*i/255
-    redGradient.append(((84/255)+mod, 0+mod, 0+mod))
+    mod = (185/15)*i/255
+    redGradient.append((1, 0+mod, 0+mod))
 
-redGradient.reverse()
+#redGradient.reverse()
 redGrad = dict(zip(powers, redGradient))
 
 print("Stokes")
