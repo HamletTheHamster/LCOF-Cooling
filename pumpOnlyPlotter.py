@@ -94,7 +94,7 @@ a, w, ce, c = 2, .1, 2.275, 0
 guess = a, w, ce, c
 
 # plot anti-Stokes fits w error
-plt.figure(dpi=250)
+plt.figure(dpi=600)
 plt.title("Experiment A: anti-Stokes")
 plt.xlabel("Frequency (GHz)")
 plt.ylabel("Spectral Density (μV)")
@@ -143,7 +143,7 @@ popt, pcov = curveFit(lin, truePowers, aSfwhm, [.1, 100], sigma=aSfwhmσ, absolu
 maS, baS = popt[0], popt[1]
 print(f"m: {maS:.4f}, b: {baS:.4f}")
 
-plt.figure(dpi=250)
+plt.figure(dpi=600)
 plt.title("Pump-Only anti-Stokes Pow v Wid")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("fwhm (MHz)")
@@ -161,7 +161,7 @@ plt.savefig(save + "P-O anti-Stokes Pow v Wid.png", format="png")
 
 
 # plot Stokes fits w error
-plt.figure(dpi=250)
+plt.figure(dpi=600)
 plt.title("Experiment A: Stokes")
 plt.xlabel("Frequency (GHz)")
 plt.ylabel("Spectral Density (μV)")
@@ -227,8 +227,8 @@ print(f"Offset:            {c:.3f}")
 
 aS['10']['ScaledSig'] = aS['10']['Sig']*(GB/aSAmp['10'])
 
-plt.figure(dpi=250)
-plt.title("Experiment A: anti-Stokes Observed and Simulated Spectra")
+plt.figure(dpi=600)
+plt.title("Experiment A: \nSimulated Gain Spectrum and Predicts Lineshape")
 plt.xlabel("Frequency (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
@@ -236,8 +236,9 @@ plt.xlim(2,2.5)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 1, label='Observed Data')
-plt.scatter(sim['Freq'], sim['Sig'], 1, label='Simulation')
+plt.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 30, label='anti-Stokes Spectrum \n(4.1 mW Pump Power)',
+edgecolors="lightblue", facecolors="none", marker="o")
+plt.plot(sim['Freq'], sim['Sig'], color="green", linestyle="-", linewidth=2, label='Gain Spectrum (Simulated)')
 plt.legend(fontsize=7.5)
 
 ax2 = plt.twinx()
@@ -256,7 +257,7 @@ popt, pcov = curveFit(lin, truePowers, sfwhm, [.1, 100], sigma=sfwhmσ, absolute
 ms, bs = popt[0], popt[1]
 print(f"m: {ms:.4f}, b: {bs:.4f}")
 
-plt.figure(dpi=250)
+plt.figure(dpi=600)
 plt.title("Experiment A: Stokes Pow v Wid")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("fwhm (MHz)")
@@ -274,7 +275,7 @@ plt.savefig(save + "P-O Stokes Pow v Wid.png", format="png")
 
 
 # plot linewidths
-plt.figure(dpi=250)
+plt.figure(dpi=600)
 plt.title("Experiment A: Linewidths vs Power")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("Linewidth (MHz)")
@@ -362,7 +363,7 @@ plt.savefig(save + "P-O Linewidths.png", format="png")
 
 
 # plot height ratios
-plt.figure(dpi=250)
+plt.figure(dpi=600)
 plt.title("Experiment A: Height Ratios")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("Stokes/anti-Stokes Amplitude")
@@ -388,7 +389,7 @@ plt.savefig(save + "P-O Height Ratios.png", format="png")
 
 
 # plot peak heights vs power, s & aS same plot, pts only
-plt.figure(dpi=250)
+plt.figure(dpi=600)
 plt.title("Experiment A: Peak Amplitude vs Power")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("Peak Spectral Density (µV)")
