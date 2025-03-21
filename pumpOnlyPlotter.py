@@ -59,7 +59,7 @@ for pow in powers:
         for i in range(1,n):
           df[pow+f]['Σ(i-avg)^2'] += (df[pow+f+str(i)]['Lin'] - df[pow+f]['Avg'])**2
 
-        df[pow+f]['σ'] = ((df[pow+f]['Σ(i-avg)^2']/float(files-1))**.5)/files**.5
+        df[pow+f]['σ'] = ((df[pow+f]['Σ(i-avg)^2']/float(files-1))**.5)
 
         # Subtract
         if f == 'ras':
@@ -96,7 +96,7 @@ guess = a, w, ce, c
 # plot anti-Stokes fits w error
 plt.figure(dpi=600)
 plt.title("Experiment A: anti-Stokes")
-plt.xlabel("Frequency (GHz)")
+plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
 plt.ylim(0,120)
@@ -135,8 +135,8 @@ for (pow, truPow) in zip(powers, truePowers):
       #plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=blueGrad[pow], linewidth=1, label=f"{truPow: .2f}"+' mW')
 
 plt.legend(fontsize=7.5)
-plt.savefig(save + "P-O anti-Stokes Fits.pdf", format="pdf")
-plt.savefig(save + "P-O anti-Stokes Fits.png", format="png")
+plt.savefig(save + "P-O anti-Stokes.pdf", format="pdf")
+plt.savefig(save + "P-O anti-Stokes.png", format="png")
 
 # plot pow v wid
 popt, pcov = curveFit(lin, truePowers, aSfwhm, [.1, 100], sigma=aSfwhmσ, absolute_sigma=True)
@@ -144,26 +144,26 @@ maS, baS = popt[0], popt[1]
 print(f"m: {maS:.4f}, b: {baS:.4f}")
 
 plt.figure(dpi=600)
-plt.title("Pump-Only anti-Stokes Pow v Wid")
+plt.title("Experiment A: anti-Stokes Linewidth vs. Pump Power")
 plt.xlabel("Pump Power (mW)")
-plt.ylabel("fwhm (MHz)")
+plt.ylabel("Linewidth (MHz)")
 plt.xlim(0,125)
 #plt.ylim()
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
 #plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
-plt.scatter(truePowers, aSfwhm, 30)
-plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Black", linewidth=1)
+plt.scatter(truePowers, aSfwhm, 50, edgecolors="blue", facecolors="none", marker="o")
+plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="lightGray", linewidth=2, linestyle="--")
 
-plt.savefig(save + "P-O anti-Stokes Pow v Wid.pdf", format="pdf")
-plt.savefig(save + "P-O anti-Stokes Pow v Wid.png", format="png")
+plt.savefig(save + "P-O anti-Stokes Wid v Pow.pdf", format="pdf")
+plt.savefig(save + "P-O anti-Stokes Wid v Pow.png", format="png")
 
 
 # plot Stokes fits w error
 plt.figure(dpi=600)
 plt.title("Experiment A: Stokes")
-plt.xlabel("Frequency (GHz)")
+plt.xlabel("Frequency [(⍵$_{P}$ - ⍵)/2π] (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
 plt.ylim(0,120)
@@ -202,8 +202,8 @@ for (pow, truPow) in zip(powers, truePowers):
   #plt.plot(s[pow]['Freq'], l(s[pow]['Freq'], *popt), linewidth=1, label=f"{truPow: .2f}"+' mW')
 
 plt.legend(fontsize=7.5)
-plt.savefig(save + "P-O Stokes Fits.pdf", format="pdf")
-plt.savefig(save + "P-O Stokes Fits.png", format="png")
+plt.savefig(save + "P-O Stokes.pdf", format="pdf")
+plt.savefig(save + "P-O Stokes.png", format="png")
 
 
 #Simulation data GB_797nm_LCOF (Nov 30, 2022 email from ryan)
@@ -221,41 +221,80 @@ fitVals = l(freqFit, GB, wid/2, cen, c)
 
 print(f"--- Simulation Fit of Brillouin Gain Spectrum Results ---")
 print(f"Brillouin Gain: {GB:.3f}")
-print(f"Center (GHz):      {cen:.3f}")
-print(f"FWHM (GHz):        {wid:.4f}")
-print(f"Offset:            {c:.3f}")
+print(f"Center (GHz):   {cen:.3f}")
+print(f"FWHM (GHz):     {wid:.4f}")
+print(f"Offset:         {c:.3f}")
 
+# Scale the observed anti-Stokes data by your best-fit gain
 aS['10']['ScaledSig'] = aS['10']['Sig']*(GB/aSAmp['10'])
+
+###############################################################################
+# Compute the reduced chi^2 comparing the best-fit simulation vs observed data
+# We'll evaluate the model at each observed frequency point, then sum residuals.
+###############################################################################
+obs_x = aS['10']['Freq'].values
+obs_y = aS['10']['ScaledSig'].values
+model_y = l(obs_x, GB, wid/2, cen, c)   # Evaluate the model at observed freq
+
+residuals = obs_y - model_y
+chi2 = np.sum((residuals / aS['10']['σ'].values)**2) # unweighted: sum( (obs - model)^2 )
+
+# Number of fit parameters in "l(...)" is 4: (GB, wid, cen, c)
+# Degrees of freedom = (number of data points) - (num params)
+dof = len(obs_x) - 4
+red_chi2 = chi2 / dof if dof > 0 else np.nan
+
+print(f"Reduced uncertainty-weighted chi^2 = {red_chi2:.4f} (Simulated gain spectrum against observed spectrum)")
+###############################################################################
 
 fig, ax1 = plt.subplots(dpi=600)
 ax1.set_title("Experiment A: \nSimulated Gain Spectrum Predicts Lineshape")
-ax1.set_xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π](GHz)")
+ax1.set_xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
 ax1.set_ylabel("Spectral Density (μV)")
 ax1.set_xlim(2, 2.5)
 ax1.set_ylim(0,3)
 ax1.minorticks_on()
 ax1.tick_params(which='both', direction='in', pad=5)
 
-left_scatter = ax1.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 30, label='anti-Stokes Spectrum \n(4.12 mW Pump Power)',
-edgecolors="lightblue", facecolors="none", marker="o")
+left_scatter = ax1.scatter(
+    aS['10']['Freq'],
+    aS['10']['ScaledSig'],
+    s=30,
+    edgecolors="lightblue",
+    facecolors="none",
+    marker="o",
+    label='anti-Stokes Spectrum \n(4.12 mW Pump Power)'
+)
 
 ax2 = ax1.twinx()
 ax2.set_ylabel('G$_{B}$ (W⁻¹m⁻¹)')
-
-# simAxisMin = -0.1*(GB/aSAmp['10'])
-# simAxisMax = 3.1*(GB/aSAmp['10'])
 ax2.set_ylim(0, 3)
-
 ax2.minorticks_on()
 ax2.tick_params(which='both', direction='in', pad=5)
 
-right_line, = ax2.plot(freqFit, fitVals, color="green", linestyle="-", linewidth=2, label='Simulated Gain Spectrum')
+right_line, = ax2.plot(
+    freqFit, fitVals,
+    color="green",
+    linestyle="-",
+    linewidth=2,
+    label='Simulated Gain Spectrum'
+)
 
 ax1.legend(loc='upper left', fontsize=7.5)
 ax2.legend(loc='upper right', fontsize=7.5)
 
-plt.savefig(f"{save} P-O Simulation.pdf", format="pdf")
-plt.savefig(f"{save} P-O Simulation.png", format="png")
+ax1.text(
+    0.95, 0.9,
+    f"Reduced χ² = {red_chi2:.2f}",
+    transform=ax1.transAxes,
+    fontsize=10,
+    color="black",
+    ha="right",   # horizontal alignment
+    va="top"     # vertical alignment
+)
+
+plt.savefig(f"{save} P-O Simulated Gain.pdf", format="pdf")
+plt.savefig(f"{save} P-O Simulated Gain.png", format="png")
 
 # plot pow v wid
 popt, pcov = curveFit(lin, truePowers, sfwhm, [.1, 100], sigma=sfwhmσ, absolute_sigma=True)
@@ -263,20 +302,20 @@ ms, bs = popt[0], popt[1]
 print(f"m: {ms:.4f}, b: {bs:.4f}")
 
 plt.figure(dpi=600)
-plt.title("Experiment A: Stokes Pow v Wid")
+plt.title("Experiment A: Stokes Linewidth vs. Pump Power")
 plt.xlabel("Pump Power (mW)")
-plt.ylabel("fwhm (MHz)")
+plt.ylabel("Linewidth (MHz)")
 plt.xlim(0,125)
 #plt.ylim()
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
 #plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
-plt.scatter(truePowers, sfwhm, 30)
-plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Black", linewidth=1)
+plt.scatter(truePowers, sfwhm, 50, edgecolors="red", facecolors="none", marker="o")
+plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="lightGray", linewidth=2, linestyle="--")
 
-plt.savefig(save + "P-O Stokes Pow v Wid.pdf", format="pdf")
-plt.savefig(save + "P-O Stokes Pow v Wid.png", format="png")
+plt.savefig(save + "P-O Stokes Wid v Pow.pdf", format="pdf")
+plt.savefig(save + "P-O Stokes Wid v Pow.png", format="png")
 
 
 # plot linewidths
@@ -369,9 +408,9 @@ plt.savefig(save + "P-O Linewidths.png", format="png")
 
 # plot height ratios
 plt.figure(dpi=600)
-plt.title("Experiment A: Height Ratios")
+plt.title("Experiment A: Peak Spectral Density Ratios")
 plt.xlabel("Pump Power (mW)")
-plt.ylabel("Stokes/anti-Stokes Amplitude")
+plt.ylabel("Stokes/anti-Stokes Peak Spectral Density")
 plt.xlim(0,125)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
@@ -387,7 +426,7 @@ print(f"m: {m: .6f} \t\t b: {b: .2f}")
 
 #plt.errorbar(truePowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Green', alpha=.5, capsize=1, capthick=.5)
 plt.scatter(truePowers, ratios, edgecolors="green", facecolors="none", marker="o")
-plt.plot(np.array([0,125]), lin(np.array([0,125]), m, b), color="Black", linewidth=1)
+plt.plot(np.array([0,125]), lin(np.array([0,125]), m, b), color="lightGray", linewidth=2, linestyle="--")
 
 plt.savefig(save + "P-O Height Ratios.pdf", format="pdf")
 plt.savefig(save + "P-O Height Ratios.png", format="png")
