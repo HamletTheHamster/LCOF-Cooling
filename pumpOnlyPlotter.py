@@ -216,7 +216,7 @@ sim = pd.DataFrame({
 popt, pcov = curveFit(l, sim['Freq'], sim['Sig'], guess)
 GB, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
 
-freqFit = np.linspace(sim['Freq'].min(), sim['Freq'].max(), 500)
+freqFit = np.linspace(sim['Freq'].min(), sim['Freq'].max(), 5000)
 fitVals = l(freqFit, GB, wid/2, cen, c)
 
 print(f"--- Simulation Fit of Brillouin Gain Spectrum Results ---")
@@ -227,27 +227,32 @@ print(f"Offset:            {c:.3f}")
 
 aS['10']['ScaledSig'] = aS['10']['Sig']*(GB/aSAmp['10'])
 
-plt.figure(dpi=600)
-plt.title("Experiment A: \nSimulated Gain Spectrum and Predicts Lineshape")
-plt.xlabel("Frequency (GHz)")
-plt.ylabel("Spectral Density (μV)")
-plt.xlim(2,2.5)
-#plt.ylim()
-plt.minorticks_on()
-plt.tick_params(which='both', direction='in', pad=5)
+fig, ax1 = plt.subplots(dpi=600)
+ax1.set_title("Experiment A: \nSimulated Gain Spectrum Predicts Lineshape")
+ax1.set_xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π](GHz)")
+ax1.set_ylabel("Spectral Density (μV)")
+ax1.set_xlim(2, 2.5)
+ax1.set_ylim(0,3)
+ax1.minorticks_on()
+ax1.tick_params(which='both', direction='in', pad=5)
 
-plt.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 30, label='anti-Stokes Spectrum \n(4.1 mW Pump Power)',
+left_scatter = ax1.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 30, label='anti-Stokes Spectrum \n(4.12 mW Pump Power)',
 edgecolors="lightblue", facecolors="none", marker="o")
-plt.plot(sim['Freq'], sim['Sig'], color="green", linestyle="-", linewidth=2, label='Gain Spectrum (Simulated)')
-plt.legend(fontsize=7.5)
 
-ax2 = plt.twinx()
-ax2.set_ylabel('GB (W⁻¹m⁻¹)')
+ax2 = ax1.twinx()
+ax2.set_ylabel('G$_{B}$ (W⁻¹m⁻¹)')
 
-simAxisMin = -0.1*(GB/aSAmp['10'])
-simAxisMax = 3.1*(GB/aSAmp['10'])
+# simAxisMin = -0.1*(GB/aSAmp['10'])
+# simAxisMax = 3.1*(GB/aSAmp['10'])
+ax2.set_ylim(0, 3)
 
-ax2.set_ylim(simAxisMin, simAxisMax)
+ax2.minorticks_on()
+ax2.tick_params(which='both', direction='in', pad=5)
+
+right_line, = ax2.plot(freqFit, fitVals, color="green", linestyle="-", linewidth=2, label='Simulated Gain Spectrum')
+
+ax1.legend(loc='upper left', fontsize=7.5)
+ax2.legend(loc='upper right', fontsize=7.5)
 
 plt.savefig(f"{save} P-O Simulation.pdf", format="pdf")
 plt.savefig(f"{save} P-O Simulation.png", format="png")
