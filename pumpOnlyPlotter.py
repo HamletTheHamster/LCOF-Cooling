@@ -378,8 +378,11 @@ deltaTnth = 293 - Tmax
 
 print(f"degrees cooled: {deltaTnth: .4f}")
 
-tempAxisMax = 293 + 293*(2*np.pi*110 - 2*np.pi*baS)/(2*np.pi*110)
-tempAxisMin = 293 + 293*(2*np.pi*90 - 2*np.pi*baS)/(2*np.pi*90)
+tempAxisMax = 293 + deltaTnth - 7
+tempAxisMin = 293 - deltaTnth - 7
+
+# tempAxisMax = 293 + 293*(2*np.pi*110 - 2*np.pi*baS)/(2*np.pi*110)
+# tempAxisMin = 293 + 293*(2*np.pi*90 - 2*np.pi*baS)/(2*np.pi*90)
 
 print(f"tempAxisMin: {tempAxisMin: .4f} \t\t tempAxisMax: {tempAxisMax: .4f}")
 
