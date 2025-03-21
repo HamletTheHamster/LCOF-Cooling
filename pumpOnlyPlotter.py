@@ -16,7 +16,7 @@ import sys
 
 timestamp = datetime.datetime.now()
 
-if len(sys.argv) > 0:
+if len(sys.argv) > 1:
     note = sys.argv[1]
 
 # import data
@@ -83,8 +83,8 @@ s = dict(zip(powers, [df['10s'], df['30s'], df['50s'], df['70s'],
                       df['250s'], df['270s'], df['290s']]))
 
 def l(x, amp, wid, cen, c):
-  #fwhm wid lorentzian
-  return amp * wid**2 / (wid**2 + ((x-cen))**2) + c
+  #wid here is HWHM, so solved width parameter needs to be multiplied by 2 to get FWHM
+  return amp * wid**2 / (wid**2 + (x-cen)**2) + c
 
 def lin(x, m, b):
   return m*x+b
@@ -95,7 +95,7 @@ guess = a, w, ce, c
 
 # plot anti-Stokes fits w error
 plt.figure(dpi=250)
-plt.title("Pump-Only anti-Stokes")
+plt.title("Experiment A: anti-Stokes")
 plt.xlabel("Frequency (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
@@ -127,7 +127,11 @@ for (pow, truPow) in zip(powers, truePowers):
       aSAmpσ[pow] = σAmp
       print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
       plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], 1, color=blueGrad[pow], label=f"{truPow: .2f}"+" mW")
+
+      #All error bars are within point width:
       #plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, alpha=.5, capsize=1, capthick=.25)
+
+      #fits:
       #plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=blueGrad[pow], linewidth=1, label=f"{truPow: .2f}"+' mW')
 
 plt.legend(fontsize=7.5)
@@ -148,8 +152,8 @@ plt.xlim(0,125)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
-#plt.scatter(truePowers, aSfwhm, 1)
+#plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
+plt.scatter(truePowers, aSfwhm, 30)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Black", linewidth=1)
 
 plt.savefig(save + "P-O anti-Stokes Pow v Wid.pdf", format="pdf")
@@ -158,7 +162,7 @@ plt.savefig(save + "P-O anti-Stokes Pow v Wid.png", format="png")
 
 # plot Stokes fits w error
 plt.figure(dpi=250)
-plt.title("Pump-Only Stokes")
+plt.title("Experiment A: Stokes")
 plt.xlabel("Frequency (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
@@ -190,7 +194,11 @@ for (pow, truPow) in zip(powers, truePowers):
   sAmpσ[pow] = σAmp
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
   plt.scatter(s[pow]['Freq'], s[pow]['Sig'], 1, color=redGrad[pow], label=f"{truPow: .2f}"+" mW")
+
+  #all error bars are within point widths:
   #plt.errorbar(s[pow]['Freq'], s[pow]['Sig'], yerr=s[pow]['σ'], fmt="None", elinewidth=.25, color='Red', alpha=.5, capsize=1, capthick=.25)
+
+  #fits:
   #plt.plot(s[pow]['Freq'], l(s[pow]['Freq'], *popt), linewidth=1, label=f"{truPow: .2f}"+' mW')
 
 plt.legend(fontsize=7.5)
@@ -198,13 +206,58 @@ plt.savefig(save + "P-O Stokes Fits.pdf", format="pdf")
 plt.savefig(save + "P-O Stokes Fits.png", format="png")
 
 
+#Simulation data GB_797nm_LCOF (Nov 30, 2022 email from ryan)
+simData = pd.read_csv("Simulations/simulated_GB_797nm_LCOF.csv", skiprows=5)
+sim = pd.DataFrame({
+    'Freq': simData['freq']/1e9,
+    'Sig': simData['gb']
+})
+
+popt, pcov = curveFit(l, sim['Freq'], sim['Sig'], guess)
+GB, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
+
+freqFit = np.linspace(sim['Freq'].min(), sim['Freq'].max(), 500)
+fitVals = l(freqFit, GB, wid/2, cen, c)
+
+print(f"--- Simulation Fit of Brillouin Gain Spectrum Results ---")
+print(f"Brillouin Gain: {GB:.3f}")
+print(f"Center (GHz):      {cen:.3f}")
+print(f"FWHM (GHz):        {wid:.4f}")
+print(f"Offset:            {c:.3f}")
+
+aS['10']['ScaledSig'] = aS['10']['Sig']*(GB/aSAmp['10'])
+
+plt.figure(dpi=250)
+plt.title("Experiment A: anti-Stokes Observed and Simulated Spectra")
+plt.xlabel("Frequency (GHz)")
+plt.ylabel("Spectral Density (μV)")
+plt.xlim(2,2.5)
+#plt.ylim()
+plt.minorticks_on()
+plt.tick_params(which='both', direction='in', pad=5)
+
+plt.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 1, label='Observed Data')
+plt.scatter(sim['Freq'], sim['Sig'], 1, label='Simulation')
+plt.legend(fontsize=7.5)
+
+ax2 = plt.twinx()
+ax2.set_ylabel('GB (W⁻¹m⁻¹)')
+
+simAxisMin = -0.1*(GB/aSAmp['10'])
+simAxisMax = 3.1*(GB/aSAmp['10'])
+
+ax2.set_ylim(simAxisMin, simAxisMax)
+
+plt.savefig(f"{save} P-O Simulation.pdf", format="pdf")
+plt.savefig(f"{save} P-O Simulation.png", format="png")
+
 # plot pow v wid
 popt, pcov = curveFit(lin, truePowers, sfwhm, [.1, 100], sigma=sfwhmσ, absolute_sigma=True)
 ms, bs = popt[0], popt[1]
 print(f"m: {ms:.4f}, b: {bs:.4f}")
 
 plt.figure(dpi=250)
-plt.title("Pump-Only Stokes Pow v Wid")
+plt.title("Experiment A: Stokes Pow v Wid")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("fwhm (MHz)")
 plt.xlim(0,125)
@@ -212,8 +265,8 @@ plt.xlim(0,125)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
-#plt.scatter(truePowers, sfwhm, 1)
+#plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
+plt.scatter(truePowers, sfwhm, 30)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Black", linewidth=1)
 
 plt.savefig(save + "P-O Stokes Pow v Wid.pdf", format="pdf")
@@ -222,9 +275,9 @@ plt.savefig(save + "P-O Stokes Pow v Wid.png", format="png")
 
 # plot linewidths
 plt.figure(dpi=250)
-plt.title("Pump-Only Linewidths")
+plt.title("Experiment A: Linewidths vs Power")
 plt.xlabel("Pump Power (mW)")
-plt.ylabel("fwhm (MHz)")
+plt.ylabel("Linewidth (MHz)")
 plt.xlim(0,125)
 plt.ylim(90,110)
 plt.minorticks_on()
@@ -239,20 +292,59 @@ deltaTaS = 293*(gammaEff - gamma)/gammaEff
 gamma = 2*np.pi*bs
 gammaEff = 2*np.pi*lin(125, ms, bs)
 deltaTS = 293*(gammaEff - gamma)/gammaEff
-print(f"degrees cooled: {deltaTaS: .4f} \t\t degrees heated: {deltaTS: .4f}")
+
+
+# Physical constants (SI)
+hbar = 1.054571817e-34  # J·s
+k_B  = 1.380649e-23     # J/K
+
+# Given frequencies (SI: rad/s)
+Gamma0   = 2*np.pi * 97e6     # 97 MHz -> rad/s
+GammaMax = 2*np.pi * 106.3e6  # 106.3 MHz -> rad/s
+OmegaB   = 2*np.pi * 2.27e9   # 2.27 GHz -> rad/s
+
+# Known temperature for Gamma0
+T0 = 293.0  # K, e.g. room temperature
+
+def n_th(T):
+    """Thermal occupation number: 1/(exp[hbar OmegaB / (k_B T)] - 1)."""
+    return 1.0 / (np.exp(hbar*OmegaB/(k_B*T)) - 1.0)
+
+# 1) Compute Q at the known T0, using Gamma0
+# (from Continuous System paper. Q stays constant)
+Q = n_th(T0)*Gamma0
+
+print(f"Q = {Q:.4e} THz")
+
+# 2) Solve for T when Gamma=GammaMax
+# We want n_th(T)*GammaMax = Q
+# => n_th(T) = Q/GammaMax
+# => 1/(exp(...)-1) = (Q/GammaMax)
+# => exp(...)-1 = (GammaMax/Q)
+# => exp(...) = 1 + (GammaMax/Q)
+# => hbar OmegaB/(k_B T) = ln[1 + (GammaMax/Q)]
+# => T = hbar OmegaB / (k_B * ln[1 + (GammaMax/Q)])
+lhs = 1.0 + GammaMax/Q
+Tmax = (hbar*OmegaB) / (k_B*np.log(lhs))
+
+print(f"T at GammaMax = {Tmax:.2f} K")
+
+deltaTnth = 293 - Tmax
+
+print(f"degrees cooled: {deltaTnth: .4f}")
 
 tempAxisMax = 293 + 293*(2*np.pi*110 - 2*np.pi*baS)/(2*np.pi*110)
 tempAxisMin = 293 + 293*(2*np.pi*90 - 2*np.pi*baS)/(2*np.pi*90)
 
 print(f"tempAxisMin: {tempAxisMin: .4f} \t\t tempAxisMax: {tempAxisMax: .4f}")
 
-plt.scatter(truePowers, aSfwhm, 1, color="blue", label="anti-Stokes")
-plt.scatter(truePowers, sfwhm, 1, color="red", label="Stokes")
+plt.scatter(truePowers, aSfwhm, 50, edgecolors="blue", facecolors="none", marker="o", label="anti-Stokes")
+plt.scatter(truePowers, sfwhm, 50, edgecolors="red", facecolors="none", marker="o", label="Stokes")
 
 #plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
-plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Blue", linewidth=1, label='anti-Stokes')
+plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Blue", linewidth=2, label='Fit (anti-Stokes)')
 #plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
-plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Red", linewidth=1, label='Stokes')
+plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Red", linewidth=2, label='Fit (Stokes)')
 #ppm, ppb = 0.2213, 97.7640
 #plt.plot(np.array([0,125]), lin(np.array([0,125]), ppm, ppb), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
 
@@ -263,7 +355,7 @@ plt.legend()
 
 ax2 = plt.twinx()
 ax2.set_ylabel('Temperature (K)')
-ax2.set_ylim(tempAxisMin,tempAxisMax)
+ax2.set_ylim(tempAxisMax,tempAxisMin)
 
 plt.savefig(save + "P-O Linewidths.pdf", format="pdf")
 plt.savefig(save + "P-O Linewidths.png", format="png")
@@ -271,7 +363,7 @@ plt.savefig(save + "P-O Linewidths.png", format="png")
 
 # plot height ratios
 plt.figure(dpi=250)
-plt.title("Pump-Only Height Ratios")
+plt.title("Experiment A: Height Ratios")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("Stokes/anti-Stokes Amplitude")
 plt.xlim(0,125)
@@ -287,18 +379,19 @@ popt, pcov = curveFit(lin, truePowers, ratios, [.1, 1], sigma=ampErr, absolute_s
 m, b = popt[0], popt[1]
 print(f"m: {m: .6f} \t\t b: {b: .2f}")
 
-plt.errorbar(truePowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Green', alpha=.5, capsize=1, capthick=.5)
+#plt.errorbar(truePowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Green', alpha=.5, capsize=1, capthick=.5)
+plt.scatter(truePowers, ratios, edgecolors="green", facecolors="none", marker="o")
 plt.plot(np.array([0,125]), lin(np.array([0,125]), m, b), color="Black", linewidth=1)
 
 plt.savefig(save + "P-O Height Ratios.pdf", format="pdf")
 plt.savefig(save + "P-O Height Ratios.png", format="png")
 
 
-# plot peak height normalized by power vs power, s & aS same plot, pts only
+# plot peak heights vs power, s & aS same plot, pts only
 plt.figure(dpi=250)
-plt.title("Power-normalized Peak Height vs Power")
+plt.title("Experiment A: Peak Amplitude vs Power")
 plt.xlabel("Pump Power (mW)")
-plt.ylabel("Power-normalized Peak Height")
+plt.ylabel("Peak Spectral Density (µV)")
 plt.xlim(0,125)
 #plt.ylim()
 plt.minorticks_on()
@@ -309,45 +402,75 @@ for (pow, truPow) in zip(powers, truePowers):
     aSAmpNorm.append(aSAmp[pow]/truPow)
     sAmpNorm.append(sAmp[pow]/truPow)
 
-plt.scatter(truePowers, aSAmpNorm, 1, color="blue", label="anti-Stokes")
-plt.scatter(truePowers, sAmpNorm, 1, color="red", label="Stokes")
+plt.scatter(truePowers, [aSAmp[p] for p in powers], 50, edgecolors="blue", facecolors="none", marker="o", label="anti-Stokes")
+plt.scatter(truePowers, [sAmp[p] for p in powers], 50, edgecolors="red", facecolors="none", marker="o", label="Stokes")
+
+#Spectral Density theoretical curves (Eqns. A27 and A28)
+# 1) Define constants
+P0_mW = 4.1           # the reference power in mW
+L = 1.0               # length in meters
+GB = 2.3              # (W*m)^-1
+P0_W = P0_mW * 1e-3   # convert mW -> W
+
+# 2) Get your "peak S.D. at P_0" from the data.
+#    Assuming your `powers` list has '10' mapped to ~4.1 mW,
+#    you can just use sAmp["10"] (which is in μV):
+stokesAtP0 = sAmp["10"]  # measured amplitude (microvolts) at ~4.1 mW
+antiStokesAtPo = aSAmp["10"]
+
+# 3) Compute the prefactor: ratio = (peakS.D.@P0)/(GB * P0 * L)
+Sratio = stokesAtP0 / (GB * P0_W * L)
+aSratio = antiStokesAtPo / (GB * P0_W * L)
+
+# 4) Define a smooth range of pump powers (0..125 mW for plotting)
+pTheory_mW = np.linspace(0, 125, 200)   # in mW
+pTheory_W  = pTheory_mW * 1e-3         # convert to W
+
+# 5) Compute G = GB * P * L, then apply the formula
+G = GB * pTheory_W * L
+stokesTheory = Sratio * ( G / (1 - G/4)**2 )  # returns amplitude in μV
+antiStokesTheory = aSratio * ( G / (1 + G/4)**2 )
+
+# 6) Plot that curve on top of your existing points
+plt.plot(pTheory_mW, stokesTheory,
+         color="red", linestyle="-", linewidth=2,
+         label="Theory (Stokes)")
 plt.legend()
-plt.savefig(f"{save} P-O Pow-norm Heights vs Pow.pdf", format="pdf")
-plt.savefig(f"{save} P-O Pow-norm Heights vs Pow.png", format="png")
 
+plt.plot(pTheory_mW, antiStokesTheory,
+         color="blue", linestyle="-", linewidth=2,
+         label="Theory (anti-Stokes)")
+plt.legend()
 
-#Simulation data GB_797nm_LCOF (Nov 30, 2022 email from ryan)
-simData = pd.read_csv("Simulations/simulated_GB_797nm_LCOF.csv", skiprows=5)
-sim = pd.DataFrame({
-    'Freq': simData['freq']/1e9,
-    'Sig': simData['gb']
-})
+# 1) Combine your power (x) data for anti-Stokes + Stokes
+xAll = np.concatenate([
+    np.array(truePowers),
+    np.array(truePowers)
+])
 
-popt, pcov = curveFit(l, sim['Freq'], sim['Sig'], guess)
-simAmp, wid, cen, c = popt[0], abs(2*popt[1]), popt[2], popt[3]
+# 2) Combine your amplitudes (y) for both
+aSAmp_vals = np.array([aSAmp[p] for p in powers])
+sAmp_vals  = np.array([sAmp[p]  for p in powers])
+yAll = np.concatenate([aSAmp_vals, sAmp_vals])
 
-aS['10']['ScaledSig'] = aS['10']['Sig']*(simAmp/aSAmp['10'])
+# 3) Fit a line (using your existing lin() function)
+popt, pcov = curveFit(lin, xAll, yAll, p0=[1,0])
+mAll, bAll = popt
 
-plt.figure(dpi=250)
-plt.title("10 mW anti-Stokes Pump-Only Power")
-plt.xlabel("Frequency (GHz)")
-plt.ylabel("Spectral Density (μV)")
-plt.xlim(2,2.5)
-#plt.ylim()
-plt.minorticks_on()
-plt.tick_params(which='both', direction='in', pad=5)
+# 4) Plot that best-fit line as a dashed line
+xFit = np.linspace(0, 125, 200)  # e.g. 0..125
+yFit = lin(xFit, mAll, bAll)
+plt.plot(xFit, yFit,
+        color='gray',
+        linestyle='--',
+        dashes=(6,6),
+        linewidth=1,
+        alpha=0.8,
+        label='Linear Trend')
 
-plt.scatter(aS['10']['Freq'], aS['10']['ScaledSig'], 1, label='Observed Data')
-plt.scatter(sim['Freq'], sim['Sig'], 1, label='Simulation')
-plt.legend(fontsize=7.5)
+plt.xlim(left=0)  # Start the x-axis at 0
+plt.ylim(bottom=0) # Start the y-axis at 0
 
-ax2 = plt.twinx()
-ax2.set_ylabel('GB (s³/(kg·m³))')
-
-simAxisMin = -0.1*(simAmp/aSAmp['10'])
-simAxisMax = 3.1*(simAmp/aSAmp['10'])
-
-ax2.set_ylim(simAxisMin, simAxisMax)
-
-plt.savefig(f"{save} P-O Simulation.pdf", format="pdf")
-plt.savefig(f"{save} P-O Simulation.png", format="png")
+plt.legend()
+plt.savefig(f"{save} P-O Heights vs Pow.pdf", format="pdf")
+plt.savefig(f"{save} P-O Heights vs Pow.png", format="png")
