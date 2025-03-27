@@ -94,8 +94,8 @@ guess = a, w, ce, c
 
 # plot fits w error
 plt.figure(dpi=250)
-plt.title("Pump-Probe anti-Stokes")
-plt.xlabel("Frequency (GHz)")
+plt.title("Experiment B: anti-Stokes")
+plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
 plt.ylim(0,2)
@@ -132,9 +132,9 @@ print(f"m: {m:.4f}, b: {b:.4f}")
 paletteList = [(31/255, 211/255, 172/255), (255/255, 122/255, 180/255), (122/255, 156/255, 255/255), (255/255, 182/255, 110/255)]
 
 plt.figure(dpi=250)
-plt.title("Pump-Probe anti-Stokes Pow v Wid")
+plt.title("Experiment B: anti-Stokes Linewidth vs. Pump Power")
 plt.xlabel("Pump Power (mW)")
-plt.ylabel("fwhm (MHz)")
+plt.ylabel("Linewidth (MHz)")
 plt.xlim(-2,72)
 #plt.ylim(,)
 plt.minorticks_on()
@@ -144,8 +144,8 @@ plt.errorbar(truePowers, fwhm, yerr=fwhmσ, fmt="None", elinewidth=.5, color='Gr
 plt.scatter(truePowers, fwhm, 5, color=paletteList)
 plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="Black", linewidth=1)
 
-plt.savefig(f"{save} P-P anti-Stokes Pow v Wid.pdf", format="pdf")
-plt.savefig(f"{save} P-P anti-Stokes Pow v Wid.png", format="png")
+plt.savefig(f"{save} P-P anti-Stokes Wid v Pow.pdf", format="pdf")
+plt.savefig(f"{save} P-P anti-Stokes Wid v Pow.png", format="png")
 
 #normalize
 aSnorm = {}
@@ -184,8 +184,8 @@ for pow in powers:
 
 # normalized plots
 plt.figure(dpi=250)
-plt.title(f"Normalized Pump-Probe anti-Stokes")
-plt.xlabel("Frequency (GHz)")
+plt.title(f"Experiment B: anti-Stokes (Normalized by Power)")
+plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
 plt.ylim(0,1.1)
