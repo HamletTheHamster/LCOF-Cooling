@@ -116,9 +116,9 @@ for (pow, truPow) in zip(powers, truePowers):
   σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
   fwhmσ.append(σWid*1000)
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
-  plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25)
+  plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.25, capsize=1, capthick=.25)
   plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=1, label=f"{truPow: .2f}"+' mW')
-  plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], 20, edgecolors=paletteDict[pow], facecolors="none", marker="o", )#label=f"{truPow: .2f}"+' mW')
+  #plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], 20, edgecolors=paletteDict[pow], facecolors="none", marker="o", alpha=.5 )#label=f"{truPow: .2f}"+' mW')
 
 plt.legend()
 plt.savefig(f"{save} P-P anti-Stokes Fits.pdf", format="pdf")
