@@ -141,7 +141,7 @@ for pow in powers:
 
 # plot fits w error
 plt.figure(dpi=250)
-plt.title("Experiment B: anti-Stokes")
+plt.title("Experiment B: anti-Stokes Spectral Fits")
 plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
 plt.ylabel("Spectral Density (μV)")
 plt.xlim(2,2.5)
@@ -164,10 +164,10 @@ for (pow, truPow) in zip(powers, truePowers):
   fwhmσ.append(σWid*1000)
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
   #plt.errorbar(bin[pow]['Freq'], bin[pow]['Sig'], yerr=bin[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.25, capsize=1, capthick=.25)
-  plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=2, label=f"{truPow: .2f}"+' mW')
+  plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=2, label=f"{truPow: .1f}")
   #plt.scatter(bin[pow]['Freq'], bin[pow]['Sig'], 40, edgecolors=paletteDict[pow], facecolors="none", marker="o", alpha=.5 )#label=f"{truPow: .2f}"+' mW')
 
-plt.legend()
+plt.legend(title="Pump Power (mW)")
 plt.savefig(f"{save} P-P anti-Stokes Fits.pdf", format="pdf")
 plt.savefig(f"{save} P-P anti-Stokes Fits.png", format="png")
 
@@ -206,7 +206,7 @@ for (pow, truPow) in zip(powers, truePowers):
 
     # 3. Now create a *new figure* for each power
     plt.figure(dpi=250)
-    plt.title(f"Experiment B: anti-Stokes\nPower = {truPow:.2f} mW")
+    plt.title(f"Experiment B: anti-Stokes Power Spectrum\nPump Power = {truPow:.1f} mW")
     plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
     plt.ylabel("Spectral Density (μV)")
     plt.xlim(2, 2.5)
@@ -235,14 +235,14 @@ for (pow, truPow) in zip(powers, truePowers):
                 facecolors="none",
                 marker="o",
                 #alpha=.5,
-                label="Data")
+                label="Observed Data")
 
     # Plot the *fitted curve* for this single power
     plt.plot(aS[pow]['Freq'],
              l(aS[pow]['Freq'], *popt),
              color=paletteDict[pow],
              linewidth=3,
-             label=f"Fit ({truPow:.2f} mW)")
+             label="Lorentzian Fit")
 
     plt.legend()
 
