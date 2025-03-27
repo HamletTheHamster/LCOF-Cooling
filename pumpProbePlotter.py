@@ -57,7 +57,7 @@ for pow in powers:
 
         # Calculate sigma
         df[pow+f]['Σ(i-avg)^2'] = (df[pow+f+'0']['Lin'] - df[pow+f]['Avg'])**2
-        for i in range(1,n):
+        for i in range(1,files):
           df[pow+f]['Σ(i-avg)^2'] += (df[pow+f+str(i)]['Lin'] - df[pow+f]['Avg'])**2
 
         df[pow+f]['σ'] = ((df[pow+f]['Σ(i-avg)^2']/float(files-1))**.5)/files**.5
@@ -118,7 +118,7 @@ for (pow, truPow) in zip(powers, truePowers):
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
   plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25)
   plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=1, label=f"{truPow: .2f}"+' mW')
-  #plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], .5, marker=".", color=palette[pow], )#label=f"{truPow: .2f}"+' mW')
+  plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], 20, edgecolors=paletteDict[pow], facecolors="none", marker="o", )#label=f"{truPow: .2f}"+' mW')
 
 plt.legend()
 plt.savefig(f"{save} P-P anti-Stokes Fits.pdf", format="pdf")
@@ -141,8 +141,8 @@ plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
 plt.errorbar(truePowers, fwhm, yerr=fwhmσ, fmt="None", elinewidth=.5, color='Gray', alpha=.5, capsize=1, capthick=.5)
-plt.scatter(truePowers, fwhm, 5, color=paletteList)
-plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="Black", linewidth=1)
+plt.scatter(truePowers, fwhm, 200, edgecolors=paletteList, facecolors="none", marker="o",)
+plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="darkGray", linewidth=1)
 
 plt.savefig(f"{save} P-P anti-Stokes Wid v Pow.pdf", format="pdf")
 plt.savefig(f"{save} P-P anti-Stokes Wid v Pow.png", format="png")
@@ -157,7 +157,7 @@ for (pow, truPow) in zip(powers, truePowers):
 
 
 #bin
-binGHz = .01
+binGHz = .00167
 nBins = int((aSnorm['0']['Freq'][len(aSnorm['0']['Freq']) - 1] - aSnorm['0']['Freq'][0])/binGHz + 1)
 
 bin = {}
