@@ -168,12 +168,14 @@ for (pow, truPow) in zip(powers, truePowers):
   #plt.scatter(bin[pow]['Freq'], bin[pow]['Sig'], 40, edgecolors=paletteDict[pow], facecolors="none", marker="o", alpha=.5 )#label=f"{truPow: .2f}"+' mW')
 
 plt.legend(title="Pump Power (mW)")
-plt.savefig(f"{save} P-P anti-Stokes Fits.pdf", format="pdf")
-plt.savefig(f"{save} P-P anti-Stokes Fits.png", format="png")
+plt.savefig(f"{save}P-P anti-Stokes Fits.pdf", format="pdf")
+plt.savefig(f"{save}P-P anti-Stokes Fits.png", format="png")
 
 # Create lists to store results (if you still want to do a combined "pow v wid" plot later)
 fwhm = []
 fwhmσ = []
+amps = []
+ampsσ = []
 
 # Loop over each power and produce *individual* fits & plots
 for (pow, truPow) in zip(powers, truePowers):
@@ -203,6 +205,8 @@ for (pow, truPow) in zip(powers, truePowers):
     # 2. Store FWHM and its error for later "pow v wid" plot
     fwhm.append(wid*1000)       # store in MHz
     fwhmσ.append(σWid*1000)
+    amps.append(amp)
+    ampsσ.append(σAmp)
 
     # 3. Now create a *new figure* for each power
     plt.figure(dpi=250)
@@ -261,12 +265,12 @@ for (pow, truPow) in zip(powers, truePowers):
 # plot pow v wid
 popt, pcov = curveFit(lin, truePowers, fwhm, [.1, 96.], sigma=fwhmσ, absolute_sigma=True)
 m, b = popt[0], popt[1]
-print(f"m: {m:.4f}, b: {b:.4f}")
+print(f"Linewidths | m: {m:.4f}, b: {b:.4f}")
 
 paletteList = [(31/255, 211/255, 172/255), (255/255, 122/255, 180/255), (122/255, 156/255, 255/255), (255/255, 182/255, 110/255)]
 
 plt.figure(dpi=250)
-plt.title("Experiment B: anti-Stokes Linewidth vs. Pump Power")
+plt.title("Experiment B: anti-Stokes Linewidths vs Pump Power")
 plt.xlabel("Pump Power (mW)")
 plt.ylabel("Linewidth (MHz)")
 plt.xlim(-2,72)
@@ -274,7 +278,7 @@ plt.xlim(-2,72)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="darkGray", linewidth=3, label="Linear Fit")
+plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="darkGray", linestyle='--', linewidth=3, label="Linear Fit")
 
 for xval, yval, err, c in zip(truePowers, fwhm, fwhmσ, paletteList):
     plt.errorbar(
@@ -299,69 +303,115 @@ for xval, yval, err, c in zip(truePowers, fwhm, fwhmσ, paletteList):
 
 plt.legend(title="Pump Power (mW)")
 
-plt.savefig(f"{save} P-P anti-Stokes Wid v Pow.pdf", format="pdf")
-plt.savefig(f"{save} P-P anti-Stokes Wid v Pow.png", format="png")
+plt.savefig(f"{save}P-P anti-Stokes Wid v Pow.pdf", format="pdf")
+plt.savefig(f"{save}P-P anti-Stokes Wid v Pow.png", format="png")
 
-#normalize
-aSnorm = {}
-for (pow, truPow) in zip(powers, truePowers):
-    aSnorm[pow] = pd.DataFrame({
-    'Freq': aS[pow]['Freq'],
-    'Sig': aS[pow]['Sig']/aS[pow]['Sig'].max(axis=0),
-    'σ': aS[pow]['σ']/aS[pow]['Sig'].max(axis=0)})
+#-------------------------------------------------------------------#
 
+# plot heights v wid
 
-#bin
-#binGHz = .007
-nBins = int((aSnorm['0']['Freq'][len(aSnorm['0']['Freq']) - 1] - aSnorm['0']['Freq'][0])/binGHz + 1)
+popt, pcov = curveFit(lin, truePowers, amps, [-.1, 2], sigma=ampsσ, absolute_sigma=True)
+m, b = popt[0], popt[1]
+print(f"Amplitudes | m: {m:.4f}, b: {b:.4f}")
 
-bin = {}
-for pow in powers:
-    bound = aSnorm[pow]['Freq'][0]
-
-    binFreqs = []
-    binSigs = []
-    for n in range(nBins):
-        bound += binGHz
-
-        sigsInBin = []
-        for (freq, sig) in zip(aSnorm[pow]['Freq'], aSnorm[pow]['Sig']):
-            if (freq < bound) and (freq > bound - binGHz):
-                sigsInBin.append(sig)
-
-        binFreqs.append(bound - (binGHz/2))
-        binSigs.append(np.mean(sigsInBin))
-
-    bin[pow] = pd.DataFrame({
-        'Freq': binFreqs,
-        'Sig': binSigs,
-    })
-
-# normalized plots
 plt.figure(dpi=250)
-plt.title(f"Experiment B: anti-Stokes (Normalized by Power)")
-plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
-plt.ylabel("Spectral Density (μV)")
-plt.xlim(2,2.5)
-plt.ylim(0,1.1)
+plt.title("Experiment B: anti-Stokes Peak Amplitudes vs Pump Power")
+plt.xlabel("Pump Power (mW)")
+plt.ylabel("Peak Spectral Density (μV)")
+plt.xlim(-2, 72)
+plt.ylim(1.25, 2)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 plt.tick_params(which='minor', axis='y', length=0)
 
-blueGradient = []
-for i in range(len(powers)):
-    mod = (185/4)*i/255
-    blueGradient.append((0+mod, 0+mod, 1))
+plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="darkGray", linestyle='--', linewidth=3, label="Linear Fit")
 
-blueGradient.reverse()
-blueGrad = dict(zip(powers, blueGradient))
+for xval, yval, err, c in zip(truePowers, amps, ampsσ, paletteList):
+    plt.errorbar(
+        xval, yval, yerr=err,
+        fmt="o",            # marker style
+        color=c,            # marker color
+        ecolor=c,           # error bar color
+        elinewidth=1,
+        alpha=.5,
+        capsize=3,
+        label=f"{xval: .1f}"
+    )
 
-pumpOnlyGamma_eff = {'0': 97.5e-3/2, '55': 100.213e-3/2, '110': 101.828e-3/2, '165': 103.442e-3/2}
-for (pow, truPow) in zip(powers, truePowers):
-    plt.scatter(bin[pow]['Freq'], bin[pow]['Sig'], 1, color=paletteDict[pow])#, label=f"{truPow: .2f}"+" mW")
-    #plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25, label=f"{truPow: .2f} mW Pump-Probe Data")
-    plt.plot(aSnorm[pow]['Freq'], lnorm(aS[pow]['Freq'], 97.315e-3/2, pumpOnlyGamma_eff[pow], 2.269), color=paletteDict[pow], linewidth=1, label=f"{truPow: .2f} mW Pump-Only Synthesized")
+    # plt.scatter(
+    #     xval, yval,
+    #     100,
+    #     edgecolors=c,
+    #     facecolors="none",
+    #     marker="o",
+    #     label=f"{xval: .1f}"
+    # )
 
-#plt.legend()
-plt.savefig(f"{save} P-P Normalized anti-Stokes Fits.pdf", format="pdf")
-plt.savefig(f"{save} P-P Normalized anti-Stokes Fits.png", format="png")
+plt.legend(title="Pump Power (mW)")
+
+plt.savefig(f"{save}P-P anti-Stokes Height v Pow.pdf", format="pdf")
+plt.savefig(f"{save}P-P anti-Stokes Height v Pow.png", format="png")
+
+# #normalize
+# aSnorm = {}
+# for (pow, truPow) in zip(powers, truePowers):
+#     aSnorm[pow] = pd.DataFrame({
+#     'Freq': aS[pow]['Freq'],
+#     'Sig': aS[pow]['Sig']/aS[pow]['Sig'].max(axis=0),
+#     'σ': aS[pow]['σ']/aS[pow]['Sig'].max(axis=0)})
+#
+#
+# #bin
+# #binGHz = .007
+# nBins = int((aSnorm['0']['Freq'][len(aSnorm['0']['Freq']) - 1] - aSnorm['0']['Freq'][0])/binGHz + 1)
+#
+# bin = {}
+# for pow in powers:
+#     bound = aSnorm[pow]['Freq'][0]
+#
+#     binFreqs = []
+#     binSigs = []
+#     for n in range(nBins):
+#         bound += binGHz
+#
+#         sigsInBin = []
+#         for (freq, sig) in zip(aSnorm[pow]['Freq'], aSnorm[pow]['Sig']):
+#             if (freq < bound) and (freq > bound - binGHz):
+#                 sigsInBin.append(sig)
+#
+#         binFreqs.append(bound - (binGHz/2))
+#         binSigs.append(np.mean(sigsInBin))
+#
+#     bin[pow] = pd.DataFrame({
+#         'Freq': binFreqs,
+#         'Sig': binSigs,
+#     })
+#
+# # normalized plots
+# plt.figure(dpi=250)
+# plt.title(f"Experiment B: anti-Stokes (Normalized by Power)")
+# plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
+# plt.ylabel("Spectral Density (μV)")
+# plt.xlim(2,2.5)
+# plt.ylim(0,1.1)
+# plt.minorticks_on()
+# plt.tick_params(which='both', direction='in', pad=5)
+# plt.tick_params(which='minor', axis='y', length=0)
+#
+# blueGradient = []
+# for i in range(len(powers)):
+#     mod = (185/4)*i/255
+#     blueGradient.append((0+mod, 0+mod, 1))
+#
+# blueGradient.reverse()
+# blueGrad = dict(zip(powers, blueGradient))
+#
+# pumpOnlyGamma_eff = {'0': 97.5e-3/2, '55': 100.213e-3/2, '110': 101.828e-3/2, '165': 103.442e-3/2}
+# for (pow, truPow) in zip(powers, truePowers):
+#     plt.scatter(bin[pow]['Freq'], bin[pow]['Sig'], 1, color=paletteDict[pow])#, label=f"{truPow: .2f}"+" mW")
+#     #plt.errorbar(aSnorm[pow]['Freq'], aSnorm[pow]['Sig'], yerr=aSnorm[pow]['σ'], fmt='none', elinewidth=.25, color=paletteDict[pow], alpha=.5, capsize=1, capthick=.25, label=f"{truPow: .2f} mW Pump-Probe Data")
+#     plt.plot(aSnorm[pow]['Freq'], lnorm(aS[pow]['Freq'], 97.315e-3/2, pumpOnlyGamma_eff[pow], 2.269), color=paletteDict[pow], linewidth=1, label=f"{truPow: .2f} mW Pump-Only Synthesized")
+#
+# #plt.legend()
+# plt.savefig(f"{save}P-P Normalized anti-Stokes Fits.pdf", format="pdf")
+# plt.savefig(f"{save}P-P Normalized anti-Stokes Fits.png", format="png")
