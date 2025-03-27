@@ -92,6 +92,53 @@ def lnorm(x, gamma_0, gamma_eff, cen):
 
 guess = a, w, ce, c
 
+#------------------------------------------------------------------#
+
+binGHz = 0.01
+nBins = int((aS['0']['Freq'].iloc[-1] - aS['0']['Freq'].iloc[0]) / binGHz + 1)
+
+bin = {}
+for pow in powers:
+    bound = aS[pow]['Freq'].iloc[0]
+
+    binFreqs = []
+    binSigs = []
+    binErrs = []
+
+    for n in range(nBins):
+        bound += binGHz
+
+        # Collect all Sig points in this bin
+        sigsInBin = []
+        for (freq, sig) in zip(aS[pow]['Freq'], aS[pow]['Sig']):
+            if (freq < bound) and (freq > bound - binGHz):
+                sigsInBin.append(sig)
+
+        # Frequency for the bin’s center
+        binFreqs.append(bound - binGHz / 2)
+
+        # Mean value in this bin
+        if len(sigsInBin) > 0:
+            meanVal = np.mean(sigsInBin)
+        else:
+            meanVal = np.nan
+        binSigs.append(meanVal)
+
+        # Standard error of the mean for that bin
+        if len(sigsInBin) > 1:
+            semVal = np.std(sigsInBin, ddof=1) / np.sqrt(len(sigsInBin))
+        else:
+            semVal = np.nan  # Or 0, or however you want to handle empty bins
+        binErrs.append(semVal)
+
+    bin[pow] = pd.DataFrame({
+        'Freq': binFreqs,
+        'Sig': binSigs,
+        'σ': binErrs,
+    })
+
+#--------------------------------------------------------------#
+
 # plot fits w error
 plt.figure(dpi=250)
 plt.title("Experiment B: anti-Stokes")
@@ -116,13 +163,97 @@ for (pow, truPow) in zip(powers, truePowers):
   σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
   fwhmσ.append(σWid*1000)
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
-  plt.errorbar(aS[pow]['Freq'], aS[pow]['Sig'], yerr=aS[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.25, capsize=1, capthick=.25)
-  plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=1, label=f"{truPow: .2f}"+' mW')
-  #plt.scatter(aS[pow]['Freq'], aS[pow]['Sig'], 20, edgecolors=paletteDict[pow], facecolors="none", marker="o", alpha=.5 )#label=f"{truPow: .2f}"+' mW')
+  #plt.errorbar(bin[pow]['Freq'], bin[pow]['Sig'], yerr=bin[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.25, capsize=1, capthick=.25)
+  plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=2, label=f"{truPow: .2f}"+' mW')
+  #plt.scatter(bin[pow]['Freq'], bin[pow]['Sig'], 40, edgecolors=paletteDict[pow], facecolors="none", marker="o", alpha=.5 )#label=f"{truPow: .2f}"+' mW')
 
 plt.legend()
 plt.savefig(f"{save} P-P anti-Stokes Fits.pdf", format="pdf")
 plt.savefig(f"{save} P-P anti-Stokes Fits.png", format="png")
+
+# Create lists to store results (if you still want to do a combined "pow v wid" plot later)
+fwhm = []
+fwhmσ = []
+
+# Loop over each power and produce *individual* fits & plots
+for (pow, truPow) in zip(powers, truePowers):
+    # 1. Fit this power's data
+    popt, pcov = curveFit(l, aS[pow]['Freq'], aS[pow]['Sig'],
+                          p0=guess,
+                          sigma=aS[pow]['σ'],
+                          absolute_sigma=True)
+    amp, widHalf, cen, c = popt
+    # Note: widHalf is the half-width in the fitted Lorentzian formula,
+    #       so the full FWHM is 2*widHalf. We'll store that in "wid."
+    wid = abs(2*widHalf)
+
+    # Extract errors
+    σAmp = np.sqrt(pcov[0,0])
+    σWidHalf = np.sqrt(pcov[1,1])
+    # Error in the full width = 2 * σWidHalf
+    σWid = abs(2*σWidHalf)
+    σCen = np.sqrt(pcov[2,2])
+    σC   = np.sqrt(pcov[3,3])
+
+    # Save or print out for your own records
+    print(f"\n=== Power {pow} (true power {truPow:.2f} mW) ===")
+    print(f"Amp: {amp:.3f} μV   FWHM: {wid*1000:.3f} MHz   Cen: {cen:.3f} GHz   C: {c:.3f} μV")
+    print(f"σAmp: {σAmp:.4f}, σWid: {σWid*1000:.4f} MHz, σCen: {σCen:.4f} GHz, σC: {σC:.4f} μV")
+
+    # 2. Store FWHM and its error for later "pow v wid" plot
+    fwhm.append(wid*1000)       # store in MHz
+    fwhmσ.append(σWid*1000)
+
+    # 3. Now create a *new figure* for each power
+    plt.figure(dpi=250)
+    plt.title(f"Experiment B: anti-Stokes\nPower = {truPow:.2f} mW")
+    plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
+    plt.ylabel("Spectral Density (μV)")
+    plt.xlim(2, 2.5)
+    plt.ylim(0, 2)
+    plt.minorticks_on()
+    plt.tick_params(which='both', direction='in', pad=5)
+    plt.tick_params(which='minor', axis='y', length=0)
+
+    freq_array = bin[pow]['Freq']
+
+    # Plot the *data points* for this single power
+    # plt.errorbar(bin[pow]['Freq'],
+    #             bin[pow]['Sig'],
+    #             yerr=bin[pow]['σ'],
+    #             fmt="None",
+    #             elinewidth=.25,
+    #             color=paletteDict[pow],
+    #             alpha=.5,
+    #             capsize=1,
+    #             capthick=.5)
+
+    plt.scatter(freq_array,
+                bin[pow]['Sig'],
+                s=80,
+                edgecolors=paletteDict[pow],
+                facecolors="none",
+                marker="o",
+                #alpha=.5,
+                label="Data")
+
+    # Plot the *fitted curve* for this single power
+    plt.plot(aS[pow]['Freq'],
+             l(aS[pow]['Freq'], *popt),
+             color=paletteDict[pow],
+             linewidth=3,
+             label=f"Fit ({truPow:.2f} mW)")
+
+    plt.legend()
+
+    # 4. Save figure (your 'save' directory was already created above).
+    plt.savefig(f"{save}P-P anti-Stokes Fit - {pow}mW.pdf", format="pdf")
+    plt.savefig(f"{save}P-P anti-Stokes Fit - {pow}mW.png", format="png")
+
+    # 5. (Optional) close the figure so we don't overwrite
+    plt.close()
+
+#-------------------------------------------------------------------#
 
 # plot pow v wid
 popt, pcov = curveFit(lin, truePowers, fwhm, [.1, 96.], sigma=fwhmσ, absolute_sigma=True)
@@ -157,7 +288,7 @@ for (pow, truPow) in zip(powers, truePowers):
 
 
 #bin
-binGHz = .00167
+#binGHz = .007
 nBins = int((aSnorm['0']['Freq'][len(aSnorm['0']['Freq']) - 1] - aSnorm['0']['Freq'][0])/binGHz + 1)
 
 bin = {}
