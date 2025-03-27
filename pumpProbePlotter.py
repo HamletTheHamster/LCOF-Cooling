@@ -161,7 +161,7 @@ for (pow, truPow) in zip(powers, truePowers):
   print(f"Amp: {amp:.3f} μV \t Wid: {wid*1000:.3f} MHz \t Cen: {cen:.3f} GHz \t\t C: {c:.3f} μV")
   #print(pcov)
   σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
-  fwhmσ.append(σWid*1000)
+  fwhmσ.append(2*σWid*1000)
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
   #plt.errorbar(bin[pow]['Freq'], bin[pow]['Sig'], yerr=bin[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.25, capsize=1, capthick=.25)
   plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=2, label=f"{truPow: .1f}")
@@ -206,7 +206,7 @@ for (pow, truPow) in zip(powers, truePowers):
 
     # 3. Now create a *new figure* for each power
     plt.figure(dpi=250)
-    plt.title(f"Experiment B: anti-Stokes Power Spectrum\nPump Power = {truPow:.1f} mW")
+    plt.title(f"Experiment B: anti-Stokes Power Spectrum\nP$_P$ = {truPow:.1f} mW")
     plt.xlabel("Frequency [(⍵ - ⍵$_{P}$)/2π] (GHz)")
     plt.ylabel("Spectral Density (μV)")
     plt.xlim(2, 2.5)
@@ -218,24 +218,27 @@ for (pow, truPow) in zip(powers, truePowers):
     freq_array = bin[pow]['Freq']
 
     # Plot the *data points* for this single power
-    # plt.errorbar(bin[pow]['Freq'],
-    #             bin[pow]['Sig'],
-    #             yerr=bin[pow]['σ'],
-    #             fmt="None",
-    #             elinewidth=.25,
-    #             color=paletteDict[pow],
-    #             alpha=.5,
-    #             capsize=1,
-    #             capthick=.5)
-
-    plt.scatter(freq_array,
+    plt.errorbar(bin[pow]['Freq'],
                 bin[pow]['Sig'],
-                s=80,
-                edgecolors=paletteDict[pow],
-                facecolors="none",
-                marker="o",
-                #alpha=.5,
-                label="Observed Data")
+                yerr=bin[pow]['σ'],
+                fmt="o",
+                elinewidth=1,
+                color=paletteDict[pow],
+                ecolor=paletteDict[pow],
+                alpha=.5,
+                capsize=3,
+                label="Observed Data"
+                # capthick=.5,
+    )
+
+    # plt.scatter(freq_array,
+    #             bin[pow]['Sig'],
+    #             s=80,
+    #             edgecolors=paletteDict[pow],
+    #             facecolors="none",
+    #             marker="o",
+    #             #alpha=.5,
+    #             label="Observed Data")
 
     # Plot the *fitted curve* for this single power
     plt.plot(aS[pow]['Freq'],
@@ -244,7 +247,7 @@ for (pow, truPow) in zip(powers, truePowers):
              linewidth=3,
              label="Lorentzian Fit")
 
-    plt.legend()
+    plt.legend(title=f"$P_P$ = {truPow:.1f} mW")
 
     # 4. Save figure (your 'save' directory was already created above).
     plt.savefig(f"{save}P-P anti-Stokes Fit - {pow}mW.pdf", format="pdf")
@@ -271,9 +274,30 @@ plt.xlim(-2,72)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
 
-plt.errorbar(truePowers, fwhm, yerr=fwhmσ, fmt="None", elinewidth=.5, color='Gray', alpha=.5, capsize=1, capthick=.5)
-plt.scatter(truePowers, fwhm, 200, edgecolors=paletteList, facecolors="none", marker="o",)
-plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="darkGray", linewidth=1)
+plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="darkGray", linewidth=3, label="Linear Fit")
+
+for xval, yval, err, c in zip(truePowers, fwhm, fwhmσ, paletteList):
+    plt.errorbar(
+        xval, yval, yerr=err,
+        fmt="o",            # marker style
+        color=c,            # marker color
+        ecolor=c,           # error bar color
+        elinewidth=1,
+        alpha=.5,
+        capsize=3,
+        label=f"{xval: .1f}"
+    )
+
+    # plt.scatter(
+    #     xval, yval,
+    #     100,
+    #     edgecolors=c,
+    #     facecolors="none",
+    #     marker="o",
+    #     label=f"{xval: .1f}"
+    # )
+
+plt.legend(title="Pump Power (mW)")
 
 plt.savefig(f"{save} P-P anti-Stokes Wid v Pow.pdf", format="pdf")
 plt.savefig(f"{save} P-P anti-Stokes Wid v Pow.png", format="png")
