@@ -389,9 +389,9 @@ print(f"tempAxisMin: {tempAxisMin: .4f} \t\t tempAxisMax: {tempAxisMax: .4f}")
 plt.scatter(truePowers, aSfwhm, 50, edgecolors="blue", facecolors="none", marker="o", label="anti-Stokes")
 plt.scatter(truePowers, sfwhm, 50, edgecolors="red", facecolors="none", marker="o", label="Stokes")
 
-#plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="None", elinewidth=.5, color='Blue', alpha=.5, capsize=1, capthick=.5)
+#plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="o", elinewidth=1, color='Blue', alpha=.5, capsize=3,)# capthick=1)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Blue", linewidth=2, label='Fit (anti-Stokes)')
-#plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="None", elinewidth=.5, color='Red', alpha=.5, capsize=1, capthick=.5)
+#plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="o", elinewidth=1, color='Red', alpha=.5, capsize=3,)# capthick=1)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Red", linewidth=2, label='Fit (Stokes)')
 #ppm, ppb = 0.2213, 97.7640
 #plt.plot(np.array([0,125]), lin(np.array([0,125]), ppm, ppb), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
