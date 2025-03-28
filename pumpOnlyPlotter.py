@@ -28,7 +28,7 @@ if not os.path.exists(save):
 powers = ['10', '30', '50', '70', '90', '110', '130', '150', '170', '190', '210', '230', '250', '270', '290']
 truePowers = []
 for pow in powers:
-    truePowers.append(float(pow)*.17**.5)
+    truePowers.append(float(pow)*.03**.5)
 
 file = ['bas', 'ras', 'bs', 'rs']
 files = 5
