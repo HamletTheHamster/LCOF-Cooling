@@ -148,7 +148,6 @@ plt.xlim(2,2.5)
 plt.ylim(0,2)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
-plt.tick_params(which='minor', axis='y', length=0)
 
 paletteDict = {'0': (31/255, 211/255, 172/255), '55': (255/255, 122/255, 180/255), '110': (122/255, 156/255, 255/255), '165': (255/255, 182/255, 110/255)}
 
@@ -163,7 +162,7 @@ for (pow, truPow) in zip(powers, truePowers):
   σAmp, σWid, σCen, σC = pcov[0][0]**.5, pcov[1][1]**.5, pcov[2][2]**.5, pcov[3][3]**.5
   fwhmσ.append(2*σWid*1000)
   print(f"σAmp: {σAmp:.4f} μV \t σWid: {σWid*1000: .4f} MHz \t σCen: {σCen: .4f} GHz \t σC: {σC: .4f} μV")
-  #plt.errorbar(bin[pow]['Freq'], bin[pow]['Sig'], yerr=bin[pow]['σ'], fmt="None", elinewidth=.25, color=paletteDict[pow], alpha=.25, capsize=1, capthick=.25)
+  #plt.errorbar(bin[pow]['Freq'], bin[pow]['Sig'], yerr=bin[pow]['σ'], fmt="o", elinewidth=1, color=paletteDict[pow], ecolor=paletteDict[pow], alpha=.5, capsize=1,)# capthick=.25)
   plt.plot(aS[pow]['Freq'], l(aS[pow]['Freq'], *popt), color=paletteDict[pow], linewidth=2, label=f"{truPow: .1f}")
   #plt.scatter(bin[pow]['Freq'], bin[pow]['Sig'], 40, edgecolors=paletteDict[pow], facecolors="none", marker="o", alpha=.5 )#label=f"{truPow: .2f}"+' mW')
 
@@ -217,7 +216,6 @@ for (pow, truPow) in zip(powers, truePowers):
     plt.ylim(0, 2)
     plt.minorticks_on()
     plt.tick_params(which='both', direction='in', pad=5)
-    plt.tick_params(which='minor', axis='y', length=0)
 
     freq_array = bin[pow]['Freq']
 
@@ -322,7 +320,6 @@ plt.xlim(-2, 72)
 plt.ylim(1.25, 2)
 plt.minorticks_on()
 plt.tick_params(which='both', direction='in', pad=5)
-plt.tick_params(which='minor', axis='y', length=0)
 
 plt.plot(np.array([-2,72]), lin(np.array([-2,72]), m, b), color="darkGray", linestyle='--', linewidth=3, label="Linear Fit")
 
