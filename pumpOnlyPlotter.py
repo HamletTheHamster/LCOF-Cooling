@@ -28,7 +28,7 @@ if not os.path.exists(save):
 powers = ['10', '30', '50', '70', '90', '110', '130', '150', '170', '190', '210', '230', '250', '270', '290']
 truePowers = []
 for pow in powers:
-    truePowers.append(float(pow)*.03**.5)
+    truePowers.append(float(pow)*.17**.5)
 
 file = ['bas', 'ras', 'bs', 'rs']
 files = 5
@@ -389,9 +389,9 @@ print(f"tempAxisMin: {tempAxisMin: .4f} \t\t tempAxisMax: {tempAxisMax: .4f}")
 plt.scatter(truePowers, aSfwhm, 50, edgecolors="blue", facecolors="none", marker="o", label="anti-Stokes")
 plt.scatter(truePowers, sfwhm, 50, edgecolors="red", facecolors="none", marker="o", label="Stokes")
 
-#plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="o", elinewidth=1, color='Blue', alpha=.5, capsize=3,)# capthick=1)
+plt.errorbar(truePowers, aSfwhm, yerr=aSfwhmσ, fmt="o", elinewidth=1, color='Blue', alpha=.5, capsize=3,)# capthick=1)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), maS, baS), color="Blue", linewidth=2, label='Fit (anti-Stokes)')
-#plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="o", elinewidth=1, color='Red', alpha=.5, capsize=3,)# capthick=1)
+plt.errorbar(truePowers, sfwhm, yerr=sfwhmσ, fmt="o", elinewidth=1, color='Red', alpha=.5, capsize=3,)# capthick=1)
 plt.plot(np.array([0,125]), lin(np.array([0,125]), ms, bs), color="Red", linewidth=2, label='Fit (Stokes)')
 #ppm, ppb = 0.2213, 97.7640
 #plt.plot(np.array([0,125]), lin(np.array([0,125]), ppm, ppb), color="Black", linewidth=1, label='Pump-Probe anti-Stokes')
@@ -427,7 +427,7 @@ popt, pcov = curveFit(lin, truePowers, ratios, [.1, 1], sigma=ampErr, absolute_s
 m, b = popt[0], popt[1]
 print(f"m: {m: .6f} \t\t b: {b: .2f}")
 
-#plt.errorbar(truePowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Green', alpha=.5, capsize=1, capthick=.5)
+plt.errorbar(truePowers, ratios, yerr=ampErr, fmt="None", elinewidth=.5, color='Green', alpha=.5, capsize=1, capthick=.5)
 plt.scatter(truePowers, ratios, edgecolors="green", facecolors="none", marker="o")
 plt.plot(np.array([0,125]), lin(np.array([0,125]), m, b), color="lightGray", linewidth=2, linestyle="--")
 
